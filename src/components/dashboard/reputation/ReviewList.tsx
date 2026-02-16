@@ -64,7 +64,7 @@ export default function ReviewList({ reviews }: ReviewListProps) {
                             </div>
                         </div>
 
-                        <p style={{ fontSize: '0.95rem', linePadding: '1.4' }}>&quot;{review.comment}&quot;</p>
+                        <p style={{ fontSize: '0.95rem', lineHeight: '1.4' }}>&quot;{review.comment}&quot;</p>
 
                         {review.response ? (
                             <div style={{ background: 'var(--surface)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border)', marginTop: '8px' }}>

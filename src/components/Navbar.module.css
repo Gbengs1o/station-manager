@@ -1,0 +1,72 @@
+.navbar {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--background);
+    z-index: 1000;
+}
+
+.navContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.logo {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logoSvg {
+    width: 40px;
+    height: 40px;
+    color: var(--primary);
+}
+
+.logo span {
+    color: var(--text-primary);
+}
+
+.navLinks {
+    display: flex;
+    gap: 2rem;
+}
+
+.navLinks a {
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+}
+
+.navLinks a:hover {
+    color: var(--primary);
+}
+
+.authLinks {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.loginBtn {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.loginBtn:hover {
+    color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .navLinks {
+        display: none;
+    }
+}

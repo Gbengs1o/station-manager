@@ -1,0 +1,103 @@
+
+/* --- Mobile & Tablet Overrides (Must be at the end) --- */
+
+@media (max-width: 1024px) {
+    .desktopOnly {
+        display: none !important;
+    }
+
+    .mobileOnly {
+        display: block !important;
+    }
+
+    .dashboard {
+        gap: 20px;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .header h1 {
+        font-size: 1.5rem; /* Smaller for mobile */
+        line-height: 1.2;
+        overflow-wrap: break-word;
+    }
+
+    .header p {
+        font-size: 0.9rem;
+        max-width: 100%;
+        line-height: 1.4;
+        overflow-wrap: break-word;
+    }
+
+    .mainContent {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .statsGrid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .chartArea,
+    .recentReports,
+    .statCard,
+    .priceInputCard,
+    .competitorCard,
+    .promoCard {
+        padding: 16px; /* Consistency */
+    }
+
+    .chartArea h2,
+    .recentReports h2 {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+    }
+
+    .competitorCard {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .compPrice {
+        text-align: left;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .tableWrap {
+        margin-left: -16px;
+        margin-right: -16px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+@media (max-width: 500px) {
+    .priceEditGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .formActions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .formActions button {
+        width: 100%;
+    }
+
+    .successMessage {
+        text-align: center;
+    }
+}

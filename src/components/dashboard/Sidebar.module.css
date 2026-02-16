@@ -1,0 +1,208 @@
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background: var(--card-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapsed {
+    width: 80px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    padding: 0 4px;
+    position: relative;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    overflow: hidden;
+}
+
+.logoSvg {
+    width: 32px;
+    height: 32px;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.collapseBtn {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: absolute;
+    right: -28px;
+    top: 4px;
+}
+
+/* On hover or when collapsed, make the button more visible */
+.sidebar:hover .collapseBtn,
+.collapsed .collapseBtn {
+    opacity: 1;
+}
+
+.collapseBtn:hover {
+    background: var(--border);
+    color: var(--primary);
+}
+
+.collapsed .header {
+    justify-content: center;
+}
+
+.collapsed .collapseBtn {
+    position: relative;
+    right: 0;
+    top: 0;
+}
+
+.nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.collapsed .navItem {
+    justify-content: center;
+    padding: 12px;
+}
+
+.navItem:hover {
+    background: var(--surface);
+    color: var(--primary);
+}
+
+.active {
+    background: rgba(155, 89, 255, 0.1);
+    color: var(--primary);
+}
+
+.footer {
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.logoutBtn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    color: #ef4444;
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.collapsed .logoutBtn {
+    justify-content: center;
+    padding: 12px;
+}
+
+.logoutBtn:hover {
+    background: rgba(239, 68, 68, 0.05);
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100% !important;
+        height: 70px !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        top: auto !important;
+        left: 0 !important;
+        right: 0 !important;
+        flex-direction: row !important;
+        padding: 0 10px !important;
+        border-right: none !important;
+        border-top: 1px solid var(--border) !important;
+        border-radius: 24px 24px 0 0 !important;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2) !important;
+        align-items: center !important;
+        justify-content: space-around !important;
+        z-index: 1000 !important;
+    }
+
+    .header,
+    .collapseBtn,
+    .footer {
+        display: none !important;
+    }
+
+    .nav {
+        flex-direction: row !important;
+        width: 100% !important;
+        justify-content: space-around !important;
+        gap: 0 !important;
+    }
+
+    .navItem {
+        flex-direction: column !important;
+        gap: 4px !important;
+        padding: 8px !important;
+        font-size: 0.75rem !important;
+        flex: 1 !important;
+        justify-content: center !important;
+    }
+
+    .navItem span {
+        display: block !important;
+        font-size: 0.65rem !important;
+    }
+
+    .logoSvg,
+    .navItem svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+}

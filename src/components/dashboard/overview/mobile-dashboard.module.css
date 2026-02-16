@@ -1,0 +1,241 @@
+:root {
+    --mobile-bg: #0a0a0c;
+    --mobile-card: #151518;
+    --mobile-border: #242428;
+    --mobile-primary: #a855f7;
+    --mobile-success: #22c55e;
+    --mobile-warning: #f59e0b;
+    --mobile-danger: #ef4444;
+    --mobile-text: #ffffff;
+    --mobile-text-dim: #9ca3af;
+}
+
+.mobileDashboard {
+    background-color: var(--mobile-bg);
+    min-height: 100vh;
+    padding: 16px;
+    padding-bottom: 80px;
+    /* Space for bottom nav */
+    font-family: 'Inter', sans-serif;
+    color: var(--mobile-text);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 1.1rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.header span {
+    font-size: 0.75rem;
+    color: var(--mobile-text-dim);
+    font-weight: normal;
+}
+
+.trustBanner {
+    background: linear-gradient(90deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.section {
+    margin-bottom: 24px;
+}
+
+.section h2 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--mobile-text-dim);
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.viewMore {
+    font-size: 0.75rem;
+    color: var(--mobile-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.priceCard {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.priceRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--mobile-border);
+}
+
+.priceRow:last-child {
+    border-bottom: none;
+}
+
+.fuelInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.fuelIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fuelDetails h3 {
+    font-size: 0.85rem;
+    margin: 0;
+    color: var(--mobile-text-dim);
+}
+
+.fuelDetails p {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.editBtn {
+    background: transparent;
+    border: 1px solid var(--mobile-border);
+    color: var(--mobile-primary);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.groundTruthGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.truthCard {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.truthLabel {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.truthLabel strong {
+    font-size: 0.85rem;
+    color: var(--mobile-text-dim);
+}
+
+.truthLabel span {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.truthCount {
+    font-size: 0.75rem;
+    color: var(--mobile-text-dim);
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.badgeSuccess {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--mobile-success);
+}
+
+.badgeWarning {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--mobile-warning);
+}
+
+.insightList {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.insightItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.flashPromoBtn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--mobile-primary) 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    padding: 18px;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3);
+    text-decoration: none;
+}
+
+/* Bottom navigation is now global, removing local styles */
+
+
+.navItemActive {
+    color: var(--mobile-primary);
+}

@@ -1,0 +1,74 @@
+.carouselContainer {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    height: 400px;
+    margin: 3rem 0;
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+}
+
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 10;
+}
+
+.controlBtn {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.active {
+    background: var(--primary);
+    transform: scale(1.2);
+}
+
+.navBtn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.3);
+    border: none;
+    color: white;
+    padding: 1rem;
+    cursor: pointer;
+    z-index: 10;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    transition: background 0.2s;
+}
+
+.navBtn:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.prev {
+    left: 10px;
+}
+
+.next {
+    right: 10px;
+}

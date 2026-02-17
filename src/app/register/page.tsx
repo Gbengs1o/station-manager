@@ -29,6 +29,26 @@ export default function Register() {
     const router = useRouter();
     const supabase = createClient();
 
+    const [user, setUser] = useState<any>(null);
+
+    // Check for existing session
+    useEffect(() => {
+        const checkUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUser(user);
+                setEmail(user.email || '');
+                // Try to parse name from metadata if available
+                if (user.user_metadata?.full_name) {
+                    const names = user.user_metadata.full_name.split(' ');
+                    if (names.length > 0) setFirstName(names[0]);
+                    if (names.length > 1) setLastName(names.slice(1).join(' '));
+                }
+            }
+        };
+        checkUser();
+    }, []);
+
     const findNearbyStations = () => {
         if (!navigator.geolocation) {
             setError('Geolocation is not supported by your browser');
@@ -101,21 +121,24 @@ export default function Register() {
         setError(null);
 
         try {
-            // 1. Sign up the user
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        full_name: `${firstName} ${lastName}`,
+            let userId = user?.id;
+
+            // 1. Sign up the user (ONLY if not already logged in)
+            if (!userId) {
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            full_name: `${firstName} ${lastName}`,
+                        }
                     }
-                }
-            });
+                });
 
-            if (authError) throw authError;
-            if (!authData.user) throw new Error('No user data returned');
-
-            const userId = authData.user.id;
+                if (authError) throw authError;
+                if (!authData.user) throw new Error('No user data returned');
+                userId = authData.user.id;
+            }
 
             // 2. Upload Verification Photo
             const fileExt = photoFile.name.split('.').pop();
@@ -142,7 +165,7 @@ export default function Register() {
                     phone_number: phoneNumber,
                     station_id: selectedStationId,
                     verification_photo_url: publicUrl,
-                    verification_status: 'pending'
+                    verification_status: 'pending' // Default to pending
                 });
 
             if (managerError) throw managerError;
@@ -162,8 +185,12 @@ export default function Register() {
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                     <Logo style={{ width: '50px', height: '50px', color: 'var(--primary)' }} />
                 </div>
-                <h1 style={{ fontSize: '1.75rem', fontWeight: '800', marginBottom: '0.5rem', textAlign: 'center' }}>Manager Registration</h1>
-                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '2rem', fontSize: '0.9rem' }}>Verify your identity and station ownership</p>
+                <h1 style={{ fontSize: '1.75rem', fontWeight: '800', marginBottom: '0.5rem', textAlign: 'center' }}>
+                    {user ? 'Complete Your Profile' : 'Manager Registration'}
+                </h1>
+                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '2rem', fontSize: '0.9rem' }}>
+                    {user ? 'Link your account to a station to verify ownership' : 'Verify your identity and station ownership'}
+                </p>
 
                 {error && (
                     <div style={{ background: 'rgba(255, 68, 68, 0.08)', color: '#ff4444', padding: '12px', borderRadius: '12px', marginBottom: '20px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(255, 68, 68, 0.2)' }}>
@@ -221,6 +248,7 @@ export default function Register() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-primary)' }}
                                 required
+                                disabled={!!user} // Disable if logged in
                             />
                         </div>
                     </div>
@@ -321,18 +349,20 @@ export default function Register() {
                         </p>
                     </div>
 
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Create Password</label>
-                        <input
-                            type="password"
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-primary)' }}
-                            required
-                            minLength={6}
-                        />
-                    </div>
+                    {!user && (
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Create Password</label>
+                            <input
+                                type="password"
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-primary)' }}
+                                required
+                                minLength={6}
+                            />
+                        </div>
+                    )}
 
                     <button type="submit" className="btn-primary" style={{ marginTop: '1rem', padding: '1rem', borderRadius: '16px', fontWeight: '700' }} disabled={loading}>
                         {loading ? 'Submitting Application...' : 'Next: Verification Review'}

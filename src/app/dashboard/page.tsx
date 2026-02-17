@@ -140,10 +140,54 @@ export default async function DashboardOverview() {
         };
     });
 
+    // 7. Fetch Real Analytics for "Search Impressions"
+    const todayStr = new Date().toISOString().split('T')[0];
+    const { data: todayAnalytics } = await supabase
+        .from('station_analytics')
+        .select('profile_views')
+        .eq('station_id', station?.id)
+        .eq('date', todayStr)
+        .single();
+
+    // Fallback to yesterday if today is empty (for demo continuity)
+    const displayViews = todayAnalytics?.profile_views || analytics?.[0]?.profile_views || 0;
+
+    // 8. Calculate "Peak Hours" from Report Timestamps (Last 7 Days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const { data: reportTimestamps } = await supabase
+        .from('price_reports')
+        .select('created_at')
+        .eq('station_id', station?.id)
+        .gte('created_at', sevenDaysAgo.toISOString())
+        .limit(1000);
+
+    // Analyze timestamps to find peak hour
+    const hourCounts: Record<number, number> = {};
+    (reportTimestamps || []).forEach(r => {
+        const hour = new Date(r.created_at).getHours();
+        hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+    });
+
+    const peakHour24 = Object.keys(hourCounts).length > 0
+        ? Object.entries(hourCounts).reduce((a, b) => a[1] > b[1] ? a : b)[0]
+        : null;
+
+    const peakHourLabel = peakHour24
+        ? `${Number(peakHour24) % 12 || 12}${Number(peakHour24) >= 12 ? 'PM' : 'AM'}`
+        : '4PM'; // Default if no data
+
     return (
         <>
             <div className={styles.mobileOnly}>
-                <MobileQuickUpdate station={station} reports={reports || []} competitors={formattedCompetitors} />
+                <MobileQuickUpdate
+                    station={station}
+                    reports={reports || []}
+                    competitors={formattedCompetitors}
+                    totalViews={displayViews}
+                    peakHour={peakHourLabel}
+                />
             </div>
 
             <div className={`${styles.dashboard} ${styles.desktopOnly}`}>

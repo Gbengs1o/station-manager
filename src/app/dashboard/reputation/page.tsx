@@ -57,11 +57,39 @@ export default async function ReputationPage() {
         ? (reviews?.reduce((acc, r) => acc + (r.rating_quality || 0), 0) || 0) / totalReviews
         : 0;
 
-    // Real Trust Points Calculation
-    const basePoints = station?.is_verified ? 500 : 200;
-    const activityPoints = ((reportsCount || 0) * 10) + ((verificationsCount || 0) * 25);
-    const responsePoints = (reviews?.filter(r => r.response).length || 0) * 50;
-    const trustPoints = Math.min(basePoints + activityPoints + responsePoints, 1000);
+    // Real Trust Points Calculation (Gamified)
+    // 1. Verification Base: 300 pts
+    const verificationPoints = station?.is_verified ? 300 : 0;
+
+    // 2. Meter Accuracy: Up to 300 pts (Based on reports)
+    // If no reports, give neutral 150. If accurate, 300. If adjusted, 0.
+    const accuracyRatio = reportsCount ? (await supabase.from('price_reports').select('*', { count: 'exact', head: true }).eq('station_id', station?.id).eq('meter_accuracy', 100)).count || 0 / reportsCount : 0.5;
+    const accuracyPoints = Math.round(accuracyRatio * 300);
+
+    // 3. Community Engagement: Up to 200 pts
+    // 50 pts per response, max 200
+    const responseCount = reviews?.filter(r => r.response).length || 0;
+    const engagementPoints = Math.min(responseCount * 50, 200);
+
+    // 4. Activity/Consistency: Up to 200 pts
+    // 10 pts per report/verification
+    const activityCount = (reportsCount || 0) + (verificationsCount || 0);
+    const consistencypoints = Math.min(activityCount * 10, 200);
+
+    const trustPoints = verificationPoints + accuracyPoints + engagementPoints + consistencypoints;
+
+    // Calculate Star Rating (Weighted)
+    // 40% Meter Accuracy, 40% User Reviews, 20% Verification Status
+    const reviewAvg = reviews?.reduce((acc, r) => acc + r.rating, 0) || 0;
+    const avgReviewScore = totalReviews ? reviewAvg / totalReviews : 0;
+
+    const weightedRating = (
+        (accuracyRatio * 5 * 0.4) +
+        (avgReviewScore * 0.4) +
+        ((station?.is_verified ? 5 : 0) * 0.2)
+    );
+    // If no data, default to 0 or 4.0 for new stations
+    const displayRating = totalReviews > 0 ? weightedRating.toFixed(1) : (station?.is_verified ? '4.0' : '0.0');
 
     return (
         <div className={styles.dashboard}>
@@ -78,6 +106,7 @@ export default async function ReputationPage() {
                         meterRating={meterRating}
                         qualityRating={qualityRating}
                         totalReviews={totalReviews}
+                        overallRating={displayRating}
                     />
 
                     <ReviewList reviews={reviews || []} />

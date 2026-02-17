@@ -3,13 +3,16 @@
 import { Star, Fuel, Gauge } from 'lucide-react';
 import styles from '@/app/dashboard/dashboard.module.css';
 
-interface TrustScoreProps {
+interface TrustScoreCardsProps {
     meterRating: number;
     qualityRating: number;
     totalReviews: number;
+    overallRating?: string;
 }
 
-export default function TrustScoreCards({ meterRating, qualityRating, totalReviews }: TrustScoreProps) {
+export default function TrustScoreCards({ meterRating, qualityRating, totalReviews, overallRating }: TrustScoreCardsProps) {
+    const displayRating = overallRating || ((meterRating + qualityRating) / 2).toFixed(1);
+
     const renderStars = (rating: number) => {
         return Array.from({ length: 5 }).map((_, i) => (
             <Star
@@ -23,6 +26,20 @@ export default function TrustScoreCards({ meterRating, qualityRating, totalRevie
 
     return (
         <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+                <div className={styles.statIcon} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+                    <Star size={24} />
+                </div>
+                <div className={styles.statLabel}>Station Trust Score</div>
+                <div className={styles.statValue}>{displayRating} <span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>/ 5.0</span></div>
+                <div className={styles.statChange} style={{ color: Number(displayRating) >= 4.0 ? '#22c55e' : '#eab308' }}>
+                    {Number(displayRating) >= 4.0 ? 'Excellent Reputation' : 'Needs Improvement'}
+                </div>
+                <div className={styles.starRow}>
+                    {renderStars(Number(displayRating))}
+                </div>
+            </div>
+
             <div className={styles.statCard}>
                 <div className={styles.statIcon} style={{ background: 'rgba(168, 85, 247, 0.1)', color: 'var(--primary)' }}>
                     <Gauge size={24} />

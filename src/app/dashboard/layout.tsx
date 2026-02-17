@@ -23,9 +23,13 @@ export default async function DashboardLayout({
         .from('manager_profiles')
         .select('verification_status')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-    if (managerProfile && managerProfile.verification_status !== 'verified') {
+    if (!managerProfile) {
+        return redirect('/register');
+    }
+
+    if (managerProfile.verification_status !== 'verified') {
         return redirect('/register/pending');
     }
 

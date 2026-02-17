@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { updateStationPrices } from '@/app/dashboard/pricing/actions';
+import { checkAndOverrideStock } from '@/utils/stock-override';
 import styles from '@/app/dashboard/dashboard.module.css';
 
 interface PriceUpdaterProps {
@@ -10,11 +11,23 @@ interface PriceUpdaterProps {
         ago: number;
         dpk: number;
     };
+    stationId?: number;
 }
 
-export default function PriceUpdater({ currentPrices }: PriceUpdaterProps) {
+export default function PriceUpdater({ currentPrices, stationId }: PriceUpdaterProps) {
     const [isUpdating, setIsUpdating] = useState(false);
     const [success, setSuccess] = useState(false);
+
+    useEffect(() => {
+        if (stationId) {
+            checkAndOverrideStock(stationId).then(result => {
+                if (result?.overridden) {
+                    alert(`⚠️ System Alert: ${result.count} users reported "No Fuel" in the last 2 hours. Your station has been marked OUT OF STOCK automatically.`);
+                    window.location.reload(); // Reload to reflect status
+                }
+            });
+        }
+    }, [stationId]);
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();

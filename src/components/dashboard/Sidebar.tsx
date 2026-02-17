@@ -29,6 +29,7 @@ const Sidebar = () => {
         { icon: MessageSquare, label: 'Reputation', href: '/dashboard/reputation' },
         { icon: BarChart3, label: 'Analytics', href: '/dashboard/analytics' },
         { icon: Megaphone, label: 'Promotions', href: '/dashboard/promotions' },
+        { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
     ];
 
     const handleLogout = async () => {
@@ -71,14 +72,6 @@ const Sidebar = () => {
             </nav>
 
             <div className={styles.footer}>
-                <Link
-                    href="/dashboard/settings"
-                    className={styles.navItem}
-                    title={isCollapsed ? 'Settings' : ''}
-                >
-                    <Settings size={20} />
-                    {!isCollapsed && <span>Settings</span>}
-                </Link>
                 <button onClick={handleLogout} className={styles.logoutBtn}>
                     <LogOut size={20} />
                     {!isCollapsed && <span>Logout</span>}

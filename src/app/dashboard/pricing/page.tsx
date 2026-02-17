@@ -96,11 +96,14 @@ export default async function PricingPage() {
 
             <div className={styles.mainContent}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <PriceUpdater currentPrices={{
-                        pms: station?.price_pms || 0,
-                        ago: station?.price_ago || 0,
-                        dpk: station?.price_dpk || 0
-                    }} />
+                    <PriceUpdater
+                        currentPrices={{
+                            pms: station?.price_pms || 0,
+                            ago: station?.price_ago || 0,
+                            dpk: station?.price_dpk || 0
+                        }}
+                        stationId={station?.id}
+                    />
 
                     <PriceHistoryChart
                         logs={pmsHistory.length ? pmsHistory.map(l => ({ date: l.created_at, price: l.new_price })) : mockChartData}

@@ -1,7 +1,10 @@
 import { createClient } from '@/utils/supabase/server';
 import { updateManagerProfile } from './actions';
 import styles from '../dashboard.module.css';
-import { User, MapPin, Bell, Shield, LogOut, Save } from 'lucide-react';
+import { User, MapPin, Bell, Shield, Save } from 'lucide-react';
+import NotificationSettings from '@/components/dashboard/settings/NotificationSettings';
+import AppearanceSettings from '@/components/dashboard/settings/AppearanceSettings';
+import SignOutButton from '@/components/dashboard/settings/SignOutButton';
 
 export default async function SettingsPage() {
     const supabase = await createClient();
@@ -139,32 +142,17 @@ export default async function SettingsPage() {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {['Low Stock Alerts', 'Competitor Price Changes', 'Weekly Analytics Report'].map((item, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: i < 2 ? '1px solid var(--border)' : 'none' }}>
-                                <span>{item}</span>
-                                <div style={{
-                                    width: '40px',
-                                    height: '24px',
-                                    background: i === 0 ? 'var(--primary)' : 'var(--border)',
-                                    borderRadius: '12px',
-                                    position: 'relative',
-                                    cursor: 'pointer'
-                                }}>
-                                    <div style={{
-                                        width: '18px',
-                                        height: '18px',
-                                        background: '#fff',
-                                        borderRadius: '50%',
-                                        position: 'absolute',
-                                        top: '3px',
-                                        left: i === 0 ? '19px' : '3px',
-                                        transition: 'left 0.2s'
-                                    }} />
-                                </div>
-                            </div>
-                        ))}
+                        <NotificationSettings
+                            initialPreferences={profile?.preferences || {
+                                low_stock_alerts: true,
+                                competitor_price_changes: false,
+                                weekly_analytics: false
+                            }}
+                        />
                     </div>
                 </section>
+
+                <AppearanceSettings />
 
                 {/* 4. Security */}
                 <section className={styles.chartArea} style={{ background: 'var(--surface)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border)' }}>
@@ -175,22 +163,7 @@ export default async function SettingsPage() {
                         </h2>
                     </div>
 
-                    <form action="/auth/signout" method="post">
-                        <button type="submit" className="btn-danger" style={{
-                            background: '#fee2e2',
-                            color: '#dc2626',
-                            border: '1px solid #fecaca',
-                            padding: '10px 20px',
-                            borderRadius: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                        }}>
-                            <LogOut size={18} /> Sign Out
-                        </button>
-                    </form>
+                    <SignOutButton />
                 </section>
 
             </div>

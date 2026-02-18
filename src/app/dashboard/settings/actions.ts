@@ -33,3 +33,30 @@ export async function updateManagerProfile(formData: FormData) {
     revalidatePath('/dashboard/settings');
     return { success: 'Profile updated successfully' };
 }
+
+export async function updateNotificationPreferences(preferences: Record<string, boolean>) {
+    const supabase = await createClient();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { error: 'Unauthorized' };
+    }
+
+    const { error } = await supabase
+        .from('manager_profiles')
+        .update({
+            preferences: preferences,
+        })
+        .eq('id', user.id);
+
+    if (error) {
+        console.error('Preferences update error:', error);
+        return { error: 'Failed to update preferences' };
+    }
+
+    revalidatePath('/dashboard/settings');
+    return { success: 'Preferences updated successfully' };
+}

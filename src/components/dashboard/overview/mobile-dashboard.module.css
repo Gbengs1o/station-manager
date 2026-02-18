@@ -239,3 +239,221 @@
 .navItemActive {
     color: var(--mobile-primary);
 }
+
+.heroCard {
+    background: linear-gradient(135deg, var(--mobile-primary) 0%, #7c3aed 100%);
+    border-radius: 24px;
+    padding: 24px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
+}
+
+.heroContent {
+    position: relative;
+    z-index: 1;
+}
+
+.greeting {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+
+.stationName {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+}
+
+.statusBadge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.statusBadge.closed {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+.widgetScroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin: 0 -16px 24px -16px;
+    padding: 0 16px;
+    scrollbar-width: none;
+}
+
+.widgetScroll::-webkit-scrollbar {
+    display: none;
+}
+
+.miniWidget {
+    flex: 0 0 140px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.widgetLabel {
+    font-size: 0.7rem;
+    color: var(--mobile-text-dim);
+    font-weight: 600;
+}
+
+.widgetValue {
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.widgetTrend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.trendUp {
+    color: var(--mobile-success);
+}
+
+.trendDown {
+    color: var(--mobile-danger);
+}
+
+.actionGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.actionBtn {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+.actionBtn:active {
+    transform: scale(0.95);
+}
+
+.actionIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.actionBtn.primary .actionIcon {
+    background: rgba(168, 85, 247, 0.1);
+    color: var(--mobile-primary);
+}
+
+.actionBtn.success .actionIcon {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--mobile-success);
+}
+
+.actionBtn.warning .actionIcon {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--mobile-warning);
+}
+
+.actionBtn.danger .actionIcon {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--mobile-danger);
+}
+
+.actionLabel {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--mobile-text);
+}
+
+.liveFeed {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 8px;
+}
+
+.feedItem {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.feedItem:last-child {
+    border-bottom: none;
+}
+
+.feedIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.feedContent p {
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.feedTime {
+    font-size: 0.7rem;
+    color: var(--mobile-text-dim);
+}
+
+.flashFab {
+    position: fixed;
+    right: 20px;
+    bottom: 90px;
+    width: 56px;
+    height: 56px;
+    background: var(--mobile-primary);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5);
+    z-index: 100;
+}

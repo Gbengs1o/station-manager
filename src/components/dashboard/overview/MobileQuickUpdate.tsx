@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import styles from './mobile-dashboard.module.css';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface MobileQuickUpdateProps {
     station: any;
@@ -29,6 +30,21 @@ interface MobileQuickUpdateProps {
     totalViews?: number;
     peakHour?: string;
 }
+
+const containerVars = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const itemVars = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+};
 
 export default function MobileQuickUpdate({
     station,
@@ -47,20 +63,36 @@ export default function MobileQuickUpdate({
     const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
 
     return (
-        <div className={styles.mobileDashboard}>
+        <motion.div
+            className={styles.mobileDashboard}
+            initial="hidden"
+            animate="show"
+            variants={containerVars}
+        >
 
             {/* 1. Hero Status Card */}
-            <div className={styles.heroCard}>
+            <motion.div variants={itemVars} className={styles.heroCard}>
                 <div className={styles.heroContent}>
                     <div className={styles.greeting}>
                         <Zap size={14} fill="#fbbf24" color="#fbbf24" />
                         <span>{greeting}, Manager</span>
                     </div>
-                    <h1 className={styles.stationName}>{station?.name || 'My Station'}</h1>
+                    <motion.h1
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className={styles.stationName}
+                    >
+                        {station?.name || 'My Station'}
+                    </motion.h1>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div className={`${styles.statusBadge} ${station?.is_out_of_stock ? styles.closed : ''}`}>
-                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'currentColor' }}></div>
+                            <motion.div
+                                animate={{ scale: [1, 1.2, 1] }}
+                                transition={{ repeat: Infinity, duration: 2 }}
+                                style={{ width: 8, height: 8, borderRadius: '50%', background: 'currentColor' }}
+                            />
                             {station?.is_out_of_stock ? 'OFFLINE' : 'LIVE ON APP'}
                         </div>
                         <Link href="/dashboard/settings" style={{ color: 'rgba(255,255,255,0.7)' }}>
@@ -68,10 +100,10 @@ export default function MobileQuickUpdate({
                         </Link>
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* 2. Horizontal Analytics Widgets */}
-            <div className={styles.widgetScroll}>
+            <motion.div variants={itemVars} className={styles.widgetScroll}>
                 <div className={styles.miniWidget}>
                     <div className={styles.widgetLabel}>Today's Views</div>
                     <div className={styles.widgetValue}>{totalViews}</div>
@@ -101,71 +133,78 @@ export default function MobileQuickUpdate({
                         <span>Exp. Heavy</span>
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* 3. Quick Actions Grid */}
-            <div className={styles.sectionHeader}>
+            <motion.div variants={itemVars} className={styles.sectionHeader}>
                 <h2>Quick Actions</h2>
-            </div>
-            <div className={styles.actionGrid}>
-                <Link href="/dashboard/pricing" className={`${styles.actionBtn} ${styles.primary}`}>
-                    <div className={styles.actionIcon}><Fuel /></div>
-                    <div className={styles.actionLabel}>Update Prices</div>
-                </Link>
-                <div className={`${styles.actionBtn} ${styles.success}`}>
+            </motion.div>
+            <motion.div variants={itemVars} className={styles.actionGrid}>
+                <motion.div whileTap={{ scale: 0.95 }}>
+                    <Link href="/dashboard/pricing" className={`${styles.actionBtn} ${styles.primary}`}>
+                        <div className={styles.actionIcon}><Fuel /></div>
+                        <div className={styles.actionLabel}>Update Prices</div>
+                    </Link>
+                </motion.div>
+                <motion.div whileTap={{ scale: 0.95 }} className={`${styles.actionBtn} ${styles.success}`}>
                     <div className={styles.actionIcon}><Store /></div>
                     <div className={styles.actionLabel}>Manage Stock</div>
-                    {/* Note: This would toggle stock, for now just UI */}
-                </div>
-                <div className={`${styles.actionBtn} ${styles.warning}`}>
+                </motion.div>
+                <motion.div whileTap={{ scale: 0.95 }} className={`${styles.actionBtn} ${styles.warning}`}>
                     <div className={styles.actionIcon}><BarChart2 /></div>
                     <div className={styles.actionLabel}>Comp. Scan</div>
-                </div>
-                <Link href="/dashboard/reputation" className={`${styles.actionBtn} ${styles.danger}`}>
-                    <div className={styles.actionIcon}><MessageSquare /></div>
-                    <div className={styles.actionLabel}>Reviews (2)</div>
-                </Link>
-            </div>
+                </motion.div>
+                <motion.div whileTap={{ scale: 0.95 }}>
+                    <Link href="/dashboard/reputation" className={`${styles.actionBtn} ${styles.danger}`}>
+                        <div className={styles.actionIcon}><MessageSquare /></div>
+                        <div className={styles.actionLabel}>Reviews (2)</div>
+                    </Link>
+                </motion.div>
+            </motion.div>
 
             {/* 4. Live Feed / Ground Truth */}
-            <div className={styles.sectionHeader}>
+            <motion.div variants={itemVars} className={styles.sectionHeader}>
                 <h2>Live Station Feed</h2>
                 <Link href="/dashboard/reputation" className={styles.viewMore}>See All</Link>
-            </div>
-            <div className={styles.liveFeed}>
-                <div className={styles.feedItem}>
-                    <div className={styles.feedIcon} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
-                        <CheckCircle2 size={16} />
-                    </div>
-                    <div className={styles.feedContent}>
-                        <p><strong>Customer Report:</strong> Meter confirmed accurate.</p>
-                        <span className={styles.feedTime}>2 mins ago via app</span>
-                    </div>
-                </div>
-                <div className={styles.feedItem}>
-                    <div className={styles.feedIcon} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
-                        <TrendingDown size={16} />
-                    </div>
-                    <div className={styles.feedContent}>
-                        <p><strong>Competitor Alert:</strong> Bovas lowered PMS to ₦630.</p>
-                        <span className={styles.feedTime}>15 mins ago</span>
-                    </div>
-                </div>
-                <div className={styles.feedItem}>
-                    <div className={styles.feedIcon} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
-                        <Activity size={16} />
-                    </div>
-                    <div className={styles.feedContent}>
-                        <p><strong>Queue Alert:</strong> Traffic building up at pumps.</p>
-                        <span className={styles.feedTime}>30 mins ago</span>
-                    </div>
-                </div>
-            </div>
+            </motion.div>
+            <motion.div variants={itemVars} className={styles.liveFeed}>
+                <AnimatePresence>
+                    {[
+                        { icon: <CheckCircle2 size={16} />, color: '#22c55e', bg: 'rgba(34, 197, 94, 0.1)', text: 'Customer Report: Meter confirmed accurate.', time: '2 mins ago' },
+                        { icon: <TrendingDown size={16} />, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)', text: 'Competitor Alert: Bovas lowered PMS to ₦630.', time: '15 mins ago' },
+                        { icon: <Activity size={16} />, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)', text: 'Queue Alert: Traffic building up at pumps.', time: '30 mins ago' }
+                    ].map((item, i) => (
+                        <motion.div
+                            key={i}
+                            className={styles.feedItem}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.5 + (i * 0.1) }}
+                        >
+                            <div className={styles.feedIcon} style={{ background: item.bg, color: item.color }}>
+                                {item.icon}
+                            </div>
+                            <div className={styles.feedContent}>
+                                <p><strong>Report:</strong> {item.text}</p>
+                                <span className={styles.feedTime}>{item.time} via app</span>
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </motion.div>
 
             {/* Flash Sale Floating Action Button */}
-            <Link href="/dashboard/promotions" className={styles.flashFab}>
-                <Megaphone size={24} />
-            </Link>
-        </div>
+            <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 1 }}
+            >
+                <Link href="/dashboard/promotions" className={styles.flashFab}>
+                    <Megaphone size={24} />
+                </Link>
+            </motion.div>
+        </motion.div>
     );
 }

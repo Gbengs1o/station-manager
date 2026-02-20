@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Flame, Clock, Zap, Crown } from 'lucide-react';
+import { Flame, Clock, Zap, Crown, MousePointer2 } from 'lucide-react';
 import styles from '../promotions/promotions.module.css';
 
 interface ActivePromotionCardProps {
@@ -38,6 +38,8 @@ export default function ActivePromotionCard({ promotion }: ActivePromotionCardPr
         return <Crown size={20} />;
     };
 
+    const ctr = promotion.views > 0 ? ((promotion.clicks || 0) / promotion.views * 100).toFixed(1) : '0';
+
     return (
         <div className={styles.statCard} style={{
             background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
@@ -62,15 +64,23 @@ export default function ActivePromotionCard({ promotion }: ActivePromotionCardPr
             </div>
             <div className={styles.statLabel} style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Active Promotion</div>
             <div className={styles.statValue} style={{ color: 'white' }}>{promotion.tier?.name || 'Boost Active'}</div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-                <div className={styles.statChange} style={{ color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '4px' }}>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '12px' }}>
+                <div style={{ color: '#22c55e', fontSize: '0.85rem', fontWeight: '600' }}>
+                    {promotion.views || 0} Reach
+                </div>
+                <div style={{ color: '#3b82f6', fontSize: '0.85rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <MousePointer2 size={12} /> {promotion.clicks || 0} Clicks
+                </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px' }}>
+                <div className={styles.statChange} style={{ color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}>
                     <Clock size={14} /> {timeLeft}
                 </div>
-                {promotion.views !== undefined && (
-                    <div style={{ color: '#22c55e', fontSize: '0.85rem', fontWeight: '600' }}>
-                        {promotion.views} Reach
-                    </div>
-                )}
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+                    {ctr}% CTR
+                </div>
             </div>
         </div>
     );

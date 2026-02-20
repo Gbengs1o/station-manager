@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Wallet, Plus, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
-import { mockTopUp } from '@/app/dashboard/promotions/actions';
+import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Loader2 } from 'lucide-react';
+import { initializeTransaction } from '@/app/dashboard/promotions/actions';
 import styles from './promotions.module.css';
 
 interface WalletDashboardProps {
@@ -11,19 +11,27 @@ interface WalletDashboardProps {
 }
 
 export default function WalletDashboard({ wallet, transactions }: WalletDashboardProps) {
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [topUpAmount, setTopUpAmount] = useState('2000');
 
-    const handleMockTopUp = async () => {
-        if (!confirm('This is a mock top-up for testing. Add ₦10,000 to your wallet?')) return;
+    const handleTopUp = async () => {
+        const amount = parseInt(topUpAmount);
+        if (isNaN(amount) || amount <= 0) {
+            alert('Please enter a valid amount');
+            return;
+        }
 
-        setIsRefreshing(true);
+        setIsLoading(true);
         try {
-            await mockTopUp(10000);
-        } catch (error) {
+            const result = await initializeTransaction(amount);
+            if (result.authorization_url) {
+                window.location.href = result.authorization_url;
+            }
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to top up wallet');
+            alert(error.message || 'Failed to initialize payment');
         } finally {
-            setIsRefreshing(false);
+            setIsLoading(false);
         }
     };
 
@@ -38,13 +46,33 @@ export default function WalletDashboard({ wallet, transactions }: WalletDashboar
                     ₦{wallet?.balance?.toLocaleString() || '0'}
                 </div>
                 <div className={styles.balanceActions}>
-                    <button
-                        className="btn-primary"
-                        onClick={handleMockTopUp}
-                        disabled={isRefreshing}
-                    >
-                        <Plus size={16} /> Top Up Wallet
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', width: '100%', marginBottom: '12px' }}>
+                        <select
+                            value={topUpAmount}
+                            onChange={(e) => setTopUpAmount(e.target.value)}
+                            className={styles.amountSelect}
+                            style={{
+                                padding: '8px',
+                                borderRadius: '8px',
+                                border: '1px solid #e2e8f0',
+                                flex: 1,
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            <option value="1000">₦1,000</option>
+                            <option value="2000">₦2,000</option>
+                            <option value="5000">₦5,000</option>
+                            <option value="10000">₦10,000</option>
+                        </select>
+                        <button
+                            className="btn-primary"
+                            onClick={handleTopUp}
+                            disabled={isLoading}
+                            style={{ flex: 2 }}
+                        >
+                            {isLoading ? <Loader2 className="animate-spin" size={16} /> : <><Plus size={16} /> Top Up</>}
+                        </button>
+                    </div>
                 </div>
             </div>
 

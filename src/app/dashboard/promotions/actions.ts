@@ -2,6 +2,8 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
+import paystack from '@/utils/paystack';
+import { sendLocalShoutout } from '@/services/notification.service';
 
 export async function getWalletInfo() {
     const supabase = await createClient();
@@ -103,11 +105,6 @@ export async function activatePromotion(stationId: number, tierId: string) {
     }
 
     // 3. Execution (Transaction)
-    // We deduct balance and create elevation in a single transaction-like flow 
-    // note: Supabase client doesn't support easy multi-table transactions in JS, 
-    // often better to use an RPC for this, but for now we'll do sequential checks 
-    // and rely on the RLS/Database constraints (balance >= 0) to prevent overdrafts.
-
     const { error: deductError } = await supabase
         .from('wallets')
         .update({ balance: wallet.balance - tier.price })
@@ -138,6 +135,11 @@ export async function activatePromotion(stationId: number, tierId: string) {
         });
 
     if (promoError) throw promoError;
+
+    // 4. Trigger Push Notification for High-Tier Promos
+    if (tier.name === 'Area Takeover' || tier.name === 'Scarcity Hero') {
+        await sendLocalShoutout(stationId, tier.name);
+    }
 
     revalidatePath('/dashboard/promotions');
     return { success: true };
@@ -173,4 +175,94 @@ export async function mockTopUp(amount: number) {
 
     revalidatePath('/dashboard/promotions');
     return { success: true };
+}
+
+export async function initializeTransaction(amount: number) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    try {
+        const response = await paystack.transaction.initialize({
+            email: user.email,
+            amount: amount * 100, // Paystack uses kobo
+            callback_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/promotions/verify`,
+            metadata: {
+                user_id: user.id,
+                type: 'wallet_topup'
+            }
+        });
+
+        if (!response.status) throw new Error(response.message);
+
+        return {
+            authorization_url: response.data.authorization_url,
+            reference: response.data.reference
+        };
+    } catch (error: any) {
+        console.error('Paystack init error:', error);
+        throw new Error('Failed to initialize payment');
+    }
+}
+
+export async function verifyPaystackTransaction(reference: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    try {
+        console.log('Verifying Paystack reference:', reference);
+        const response = await paystack.transaction.verify(reference);
+        console.log('Paystack response status:', response?.data?.status);
+
+        if (response.data.status === 'success') {
+            const amount = response.data.amount / 100;
+
+            // Update Wallet
+            const { data: wallet } = await supabase
+                .from('wallets')
+                .select('balance')
+                .eq('id', user.id)
+                .single();
+
+            console.log('Wallet update result:', { userId: user.id, amount });
+            const { error: updateError } = await supabase
+                .from('wallets')
+                .update({ balance: (wallet?.balance || 0) + amount })
+                .eq('id', user.id);
+
+            if (updateError) {
+                console.error('Wallet update error:', updateError);
+                throw updateError;
+            }
+
+            // Record Transaction
+            const { error: transError } = await supabase.from('wallet_transactions').insert({
+                wallet_id: user.id,
+                amount: amount,
+                type: 'deposit',
+                metadata: {
+                    method: 'paystack',
+                    reference: reference,
+                    channel: response.data.channel
+                }
+            });
+
+            if (transError) {
+                console.error('Transaction record error:', transError);
+                throw transError;
+            }
+
+            console.log('Top-up successful for user:', user.id);
+            revalidatePath('/dashboard/promotions');
+            return { success: true };
+        }
+
+        return { success: false, message: 'Transaction not successful' };
+    } catch (error) {
+        console.error('Paystack verify error:', error);
+        throw new Error('Failed to verify payment');
+    }
 }

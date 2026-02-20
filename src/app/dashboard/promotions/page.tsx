@@ -40,7 +40,7 @@ export default function PromotionsPage() {
                     const sid = Number(profile.station_id);
                     setStationId(sid);
                     const hData = await getCampaignHistory(sid);
-                    setHistory(hData);
+                    setHistory(hData || []);
                 }
             }
         } catch (error) {
@@ -122,6 +122,7 @@ export default function PromotionsPage() {
                                 <th>Start Date</th>
                                 <th>End Date</th>
                                 <th>Reach (Views)</th>
+                                <th>Clicks</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -133,6 +134,7 @@ export default function PromotionsPage() {
                                         <td>{new Date(campaign.start_time).toLocaleDateString()} {new Date(campaign.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                                         <td>{new Date(campaign.end_time).toLocaleDateString()} {new Date(campaign.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                                         <td>{campaign.views || 0}</td>
+                                        <td>{campaign.clicks || 0}</td>
                                         <td>
                                             <span className={campaign.status === 'active' ? styles.statusActive : styles.statusCompleted}>
                                                 {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
@@ -142,7 +144,7 @@ export default function PromotionsPage() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
                                         No promotion history found. Start your first boost above!
                                     </td>
                                 </tr>

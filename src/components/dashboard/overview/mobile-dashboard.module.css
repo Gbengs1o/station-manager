@@ -457,3 +457,50 @@
     box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5);
     z-index: 100;
 }
+
+.activePromoBanner {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid #fbbf24;
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px rgba(251, 191, 36, 0.1);
+    cursor: pointer;
+}
+
+.activePromoContent {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.activePromoHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.pulseIcon {
+    background: rgba(251, 191, 36, 0.1);
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.activePromoStats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: var(--mobile-text-dim);
+    font-weight: 600;
+}
+
+.divider {
+    opacity: 0.5;
+}

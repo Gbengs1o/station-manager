@@ -238,6 +238,7 @@ export default function DashboardOverview() {
                     competitors={formattedCompetitors}
                     totalViews={displayViews}
                     peakHour={peakHourLabel}
+                    activePromotion={activePromotion}
                 />
             </div>
 

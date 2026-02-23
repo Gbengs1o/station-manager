@@ -29,6 +29,7 @@ interface MobileQuickUpdateProps {
     competitors: any[];
     totalViews?: number;
     peakHour?: string;
+    activePromotion?: any;
 }
 
 const containerVars = {
@@ -51,7 +52,8 @@ export default function MobileQuickUpdate({
     reports,
     competitors,
     totalViews = 0,
-    peakHour = '4PM'
+    peakHour = '4PM',
+    activePromotion
 }: MobileQuickUpdateProps) {
     // Calculate Ground Truth from reports
     const recentReports = reports || [];
@@ -101,6 +103,29 @@ export default function MobileQuickUpdate({
                     </div>
                 </div>
             </motion.div>
+
+            {/* Active Promotion Banner for Mobile */}
+            {activePromotion && (
+                <motion.div
+                    variants={itemVars}
+                    className={styles.activePromoBanner}
+                    whileTap={{ scale: 0.98 }}
+                >
+                    <Link href="/dashboard/promotions" style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}>
+                        <div className={styles.activePromoContent}>
+                            <div className={styles.activePromoHeader}>
+                                <div className={styles.pulseIcon}><Zap size={14} fill="#fbbf24" /></div>
+                                <span>{activePromotion.tier?.name} is LIVE</span>
+                            </div>
+                            <div className={styles.activePromoStats}>
+                                <span>{activePromotion.views || 0} Reach</span>
+                                <span className={styles.divider}>•</span>
+                                <span>{activePromotion.clicks || 0} Clicks</span>
+                            </div>
+                        </div>
+                    </Link>
+                </motion.div>
+            )}
 
             {/* 2. Horizontal Analytics Widgets */}
             <motion.div variants={itemVars} className={styles.widgetScroll}>

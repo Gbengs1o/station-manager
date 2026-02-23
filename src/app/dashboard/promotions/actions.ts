@@ -124,15 +124,12 @@ export async function activatePromotion(stationId: number, tierId: string) {
     const endTime = new Date();
     endTime.setHours(endTime.getHours() + tier.duration_hours);
 
-    const { error: promoError } = await supabase
-        .from('station_promotions')
-        .insert({
-            station_id: stationId,
-            tier_id: tierId,
-            user_id: user.id,
-            end_time: endTime.toISOString(),
-            status: 'active'
-        });
+    const { error: promoError } = await supabase.rpc('create_active_promotion', {
+        p_station_id: stationId,
+        p_tier_id: tierId,
+        p_user_id: user.id,
+        p_end_time: endTime.toISOString()
+    });
 
     if (promoError) throw promoError;
 

@@ -78,7 +78,7 @@ export default function BoostModal({ isOpen, onClose, tiers, walletBalance, stat
                     <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', marginBottom: '24px' }}>
                         <h5 style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: '#1e293b' }}>Features included:</h5>
                         <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#64748b' }}>
-                            {tier.features?.map((f: string, i: number) => (
+                            {selectedTier.features?.map((f: string, i: number) => (
                                 <li key={i}>{f.replace('_', ' ')}</li>
                             ))}
                         </ul>

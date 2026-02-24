@@ -709,6 +709,11 @@
     color: var(--text-secondary);
 }
 
+.statusPending {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
 .priceDiff {
     font-weight: 600;
     font-size: 0.8rem;

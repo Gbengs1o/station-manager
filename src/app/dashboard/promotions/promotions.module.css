@@ -139,6 +139,7 @@
 
 .tierCard h4 {
     margin: 0;
+    color: #1e293b;
 }
 
 .tierPrice {
@@ -353,6 +354,17 @@
     border: 1px solid #e2e8f0;
     border-radius: 16px;
     padding: 24px;
+    color: #1e293b;
+    /* Ensure default text color is dark on white background */
+}
+
+/* Ensure table text inside white history section is visible */
+.promotionHistory table th {
+    color: #64748b !important;
+}
+
+.promotionHistory table td {
+    color: #1e293b !important;
 }
 
 .promotionHistory h2 {

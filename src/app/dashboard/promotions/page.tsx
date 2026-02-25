@@ -152,7 +152,7 @@ export default function PromotionsPage() {
             <div className={promoStyles.promotionHistory} style={{ marginBottom: '32px' }}>
                 <h2 style={{ marginBottom: '16px' }}>Available Boost Plans</h2>
                 <div className={promoStyles.boostPlansGrid}>
-                    {tiers.map((tier) => (
+                    {tiers.filter((t) => ['Quick Boost', 'Flash Sale', 'Area Takeover'].includes(t.name)).map((tier) => (
                         <div
                             key={tier.id}
                             className={promoStyles.boostPlanCard}
@@ -249,7 +249,7 @@ export default function PromotionsPage() {
                     setIsModalOpen(false);
                     fetchData(); // Refresh wallet after activation
                 }}
-                tiers={tiers}
+                tiers={tiers.filter((t) => ['Quick Boost', 'Flash Sale', 'Area Takeover'].includes(t.name))}
                 walletBalance={walletData?.wallet?.balance || 0}
                 stationId={stationId || 0}
             />

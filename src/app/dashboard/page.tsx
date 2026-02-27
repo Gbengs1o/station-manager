@@ -393,8 +393,8 @@ export default function DashboardOverview() {
                         {/* Combined Feedback & Reports Snapshot */}
                         <motion.div variants={itemVars}>
                             <FeedbackSnapshot feedbacks={[
-                                ...(feedbacks || []).map(f => ({ ...f, type: 'review' })),
-                                ...(reports || []).map(r => ({
+                                ...(feedbacks || []).map((f: any) => ({ ...f, type: 'review' })),
+                                ...(reports || []).map((r: any) => ({
                                     id: r.id,
                                     comment: r.notes || "",
                                     price: r.price,

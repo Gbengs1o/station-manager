@@ -89,7 +89,6 @@ export default function CapacityManager({ stationId, initialCapacity, peakVisits
                     <button
                         onClick={() => setIsEditing(!isEditing)}
                         style={{
-                            background: 'none',
                             border: 'none',
                             color: 'var(--primary)',
                             fontSize: '0.75rem',

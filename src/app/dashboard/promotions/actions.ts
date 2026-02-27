@@ -214,7 +214,7 @@ export async function initializeTransaction(amount: number) {
 
     try {
         const response = await paystack.transaction.initialize({
-            email: user.email,
+            email: user.email!,
             amount: amount * 100, // Paystack uses kobo
             callback_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/promotions/verify`,
             metadata: {

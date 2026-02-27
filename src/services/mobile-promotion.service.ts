@@ -4,7 +4,7 @@
  * It provides methods to fetch active promotions and track user interactions.
  */
 
-import { createClient } from './supabase/client'; // Adjust path in mobile app
+import { createClient } from '@/utils/supabase/client';
 
 /**
  * Fetches the active promotion for a specific station.

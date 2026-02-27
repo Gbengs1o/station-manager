@@ -146,6 +146,14 @@ export default function DashboardOverview() {
                 }
             }
 
+            // 5b. Fetch Favourites
+            const { count: favCount } = await supabase
+                .from('favourite_stations')
+                .select('*', { count: 'exact', head: true })
+                .eq('station_id', station?.id);
+
+            const totalFavourites = favCount || 0;
+
             const visitGrowth = yesterdayVisits > 0
                 ? ((todayVisits - yesterdayVisits) / yesterdayVisits) * 100
                 : (todayVisits > 0 ? 100 : 0);
@@ -223,7 +231,9 @@ export default function DashboardOverview() {
                 displayViews,
                 peakHourLabel,
                 activePromotion,
-                statePrice
+                statePrice,
+                totalFavourites,
+                communityReach: displayViews + (reports?.length || 0) + totalFavourites
             });
             setLoading(false);
         }
@@ -246,7 +256,9 @@ export default function DashboardOverview() {
         displayViews,
         peakHourLabel,
         activePromotion,
-        statePrice
+        statePrice,
+        communityReach,
+        totalFavourites
     } = data;
 
     const containerVars = {
@@ -345,7 +357,21 @@ export default function DashboardOverview() {
 
                             <motion.div variants={itemVars} whileHover={{ y: -5 }}>
                                 <Link href="/dashboard/analytics" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-                                    <RevenueProjection todayVisits={todayVisits} price={station?.price_pms || statePrice} />
+                                    <div className={styles.statCard} style={{
+                                        background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%)',
+                                        border: '1px solid rgba(168, 85, 247, 0.2)'
+                                    }}>
+                                        <div className={styles.statIcon} style={{ background: 'rgba(168, 85, 247, 0.2)', color: '#a855f7' }}>
+                                            <TrendingUp size={24} />
+                                        </div>
+                                        <div className={styles.statLabel}>Community Reach</div>
+                                        <div className={styles.statValue} style={{ color: '#a855f7' }}>
+                                            {communityReach >= 1000 ? `${(communityReach / 1000).toFixed(1)}k` : communityReach.toLocaleString()}
+                                        </div>
+                                        <div className={styles.statChange}>
+                                            {totalFavourites} driver favorites
+                                        </div>
+                                    </div>
                                 </Link>
                             </motion.div>
 

@@ -23,7 +23,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 import QuickPriceAction from '@/components/dashboard/overview/QuickPriceAction';
-import RevenueProjection from '@/components/dashboard/overview/RevenueProjection';
 import SmartRecommendations from '@/components/dashboard/overview/SmartRecommendations';
 import DashboardEducation from '@/components/dashboard/overview/DashboardEducation';
 import { getActivePromotion } from './promotions/actions';

@@ -222,7 +222,8 @@ export default function DashboardOverview() {
                 trendData,
                 displayViews,
                 peakHourLabel,
-                activePromotion
+                activePromotion,
+                statePrice
             });
             setLoading(false);
         }
@@ -244,7 +245,8 @@ export default function DashboardOverview() {
         trendData,
         displayViews,
         peakHourLabel,
-        activePromotion
+        activePromotion,
+        statePrice
     } = data;
 
     const containerVars = {

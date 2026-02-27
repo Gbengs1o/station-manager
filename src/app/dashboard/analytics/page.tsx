@@ -189,7 +189,10 @@ export default async function AnalyticsPage() {
                         <MapPin size={20} />
                     </div>
                     <h3>Station Capacity Usage</h3>
-                    <CapacityManager initialCapacity={100} currentUsage={capacityUsage} />
+                    <p className={styles.statValue}>{capacityUsage}%</p>
+                    <span className={styles.statTrend} style={{ color: capacityUsage > 80 ? '#ef4444' : 'var(--primary)' }}>
+                        {capacityUsage > 80 ? 'Near peak limit' : 'Optimal operations'}
+                    </span>
                 </div>
                 <VisitorsStatCard
                     totalVisits={totalVisits}

@@ -120,7 +120,7 @@ export default async function ReputationPage() {
         ((station?.is_verified ? 5 : 0) * 0.2)
     );
     // Every station baselines at 5.0 (100% in app terms)
-    const displayRating = (totalReviews > 0 || reportsCount > 0) ? weightedRating.toFixed(1) : '5.0';
+    const displayRating = (totalReviews > 0 || (reportsCount || 0) > 0) ? weightedRating.toFixed(1) : '5.0';
 
     // MOBILE APP SYNC: Trust Score as Percentage
     const trustScorePercent = Math.round((Number(displayRating) / 5) * 100);

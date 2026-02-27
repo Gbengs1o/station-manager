@@ -66,6 +66,38 @@ export async function getCampaignHistory(stationId: number) {
     return data;
 }
 
+export async function getCampaignDetails(id: string) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('station_promotions')
+        .select('*, tier:tier_id(*)')
+        .eq('id', id)
+        .single();
+
+    if (error) {
+        console.error('Error fetching campaign details:', error);
+        return null;
+    }
+    return data;
+}
+
+export async function getPromotionClickEvents(promotionId: string) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('promotion_click_events')
+        .select('created_at')
+        .eq('promotion_id', promotionId)
+        .order('created_at', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching click events:', error);
+        return [];
+    }
+    return data;
+}
+
 export async function getPromotionTiers() {
     const supabase = await createClient();
     const { data, error } = await supabase

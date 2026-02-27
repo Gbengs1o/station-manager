@@ -36,10 +36,18 @@
 }
 
 .historyCard {
-    background: white;
+    background: var(--card-bg);
     padding: 24px;
     border-radius: 16px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.historyCard:hover {
+    border-color: rgba(155, 89, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .historyHeader {
@@ -49,32 +57,64 @@
     margin-bottom: 16px;
 }
 
+.historyHeader h3 {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
 .transactionList {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 4px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.transactionList::-webkit-scrollbar {
+    width: 4px;
+}
+
+.transactionList::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.transactionList::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
 }
 
 .transactionItem {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.transactionItem:hover {
+    border-color: var(--border);
+    background: rgba(155, 89, 255, 0.04);
 }
 
 .transactionInfo h4 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-weight: 600;
 }
 
 .transactionInfo span {
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-secondary);
 }
 
 .amount {
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 0.95rem;
 }
 
 .amountDeposit {
@@ -85,6 +125,69 @@
     color: #ef4444;
 }
 
+/* Section Header Row (title + refresh button) */
+.sectionHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.sectionHeaderRow h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Refresh Button */
+.refreshBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+}
+
+.refreshBtn:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: rgba(155, 89, 255, 0.08);
+    transform: rotate(30deg);
+}
+
+.refreshBtn:active {
+    transform: rotate(90deg) scale(0.95);
+}
+
+@keyframes spinRefresh {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.refreshBtnSpinning {
+    composes: refreshBtn;
+    pointer-events: none;
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.refreshBtnSpinning svg {
+    animation: spinRefresh 0.8s linear infinite;
+}
+
 /* Modal Styles */
 .modalOverlay {
     position: fixed;
@@ -92,21 +195,24 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .modal {
-    background: white;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     padding: 32px;
     border-radius: 20px;
     width: 100%;
     max-width: 600px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.4);
+    color: var(--text-primary);
 }
 
 .tierGrid {
@@ -117,40 +223,43 @@
 }
 
 .tierCard {
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--border);
     border-radius: 12px;
     padding: 16px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s ease;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    background: var(--surface);
 }
 
 .tierCard:hover {
-    border-color: #3b82f6;
-    background: #f8fafc;
+    border-color: var(--primary);
+    background: rgba(155, 89, 255, 0.06);
+    transform: translateY(-2px);
 }
 
 .tierCardActive {
-    border-color: #3b82f6;
-    background: #eff6ff;
+    border-color: var(--primary);
+    background: rgba(155, 89, 255, 0.1);
+    box-shadow: 0 0 0 1px var(--primary);
 }
 
 .tierCard h4 {
     margin: 0;
-    color: #1e293b;
+    color: var(--text-primary);
 }
 
 .tierPrice {
     font-size: 1.2rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
 }
 
 .tierDuration {
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-secondary);
 }
 
 /* Analytics Summary */
@@ -162,13 +271,35 @@
 }
 
 .analyticsCard {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     border-radius: 16px;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.analyticsCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.analyticsCard:hover {
+    transform: translateY(-4px);
+    border-color: rgba(155, 89, 255, 0.4);
+    box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.3);
 }
 
 .analyticsIcon {
@@ -182,7 +313,7 @@
 
 .analyticsLabel {
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-secondary);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -191,7 +322,7 @@
 .analyticsValue {
     font-size: 1.8rem;
     font-weight: 800;
-    color: #1e293b;
+    color: var(--text-primary);
     line-height: 1;
 }
 
@@ -234,14 +365,14 @@
 }
 
 .boostPlanCard {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     border-radius: 16px;
     padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
 }
@@ -256,24 +387,36 @@
     background: var(--plan-color, #3b82f6);
 }
 
+.boostPlanCard::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 40%);
+    pointer-events: none;
+}
+
 .boostPlanCard:hover {
     border-color: var(--plan-color, #3b82f6);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+        0 0 0 1px var(--plan-color, rgba(59, 130, 246, 0.3));
+    transform: translateY(-4px);
 }
 
 .boostPlanCard h3 {
     margin: 0;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
 }
 
 .boostPlanIcon {
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: #f8fafc;
+    background: var(--surface);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -282,7 +425,7 @@
 
 .boostPlanDesc {
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--text-secondary);
     line-height: 1.5;
     margin: 0;
     flex: 1;
@@ -298,16 +441,17 @@
 .boostPlanPrice {
     font-size: 1.3rem;
     font-weight: 800;
-    color: #1e293b;
+    color: var(--text-primary);
 }
 
 .boostPlanDuration {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #64748b;
-    background: #f1f5f9;
+    color: var(--text-secondary);
+    background: var(--surface);
     padding: 4px 10px;
     border-radius: 20px;
+    border: 1px solid var(--border);
 }
 
 .boostPlanFeatures {
@@ -320,9 +464,9 @@
 .featureTag {
     font-size: 0.7rem;
     font-weight: 600;
-    color: #64748b;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1px solid var(--border);
     padding: 3px 8px;
     border-radius: 6px;
     text-transform: capitalize;
@@ -341,37 +485,102 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: opacity 0.2s;
+    transition: all 0.25s ease;
+    position: relative;
+    z-index: 1;
 }
 
 .boostPlanBtn:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Promotion History Section */
+/* Promotion History & Campaign History Section */
 .promotionHistory {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     border-radius: 16px;
     padding: 24px;
-    color: #1e293b;
-    /* Ensure default text color is dark on white background */
+    color: var(--text-primary);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: border-color 0.3s ease;
 }
 
-/* Ensure table text inside white history section is visible */
+.promotionHistory:hover {
+    border-color: rgba(155, 89, 255, 0.2);
+}
+
+/* Ensure table text inside history section is visible */
 .promotionHistory table th {
-    color: #64748b !important;
+    color: var(--text-secondary) !important;
 }
 
 .promotionHistory table td {
-    color: #1e293b !important;
+    color: var(--text-primary) !important;
 }
 
 .promotionHistory h2 {
     margin: 0 0 16px 0;
     font-size: 1.2rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
+}
+
+/* Features detail box in modal */
+.featuresBox {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.featuresBox h5 {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.featuresBox ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Amount Select for wallet */
+.amountSelect {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border) !important;
+    background: var(--surface) !important;
+    color: var(--text-primary) !important;
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.amountSelect option {
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
+
+/* Empty state styling */
+.emptyState {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 30px 20px;
+    font-size: 0.95rem;
+}
+
+.clickableRow {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.clickableRow:hover {
+    background-color: rgba(155, 89, 255, 0.08) !important;
 }
 
 @media (max-width: 768px) {
@@ -385,5 +594,9 @@
 
     .boostPlansGrid {
         grid-template-columns: 1fr;
+    }
+
+    .sectionHeaderRow h2 {
+        font-size: 1.05rem;
     }
 }

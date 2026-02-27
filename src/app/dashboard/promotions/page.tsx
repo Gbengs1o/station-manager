@@ -1,8 +1,9 @@
 'use client';
 
 import { createClient } from '@/utils/supabase/client';
-import { Award, DollarSign, Eye, Flame, MousePointer2, Plus, Rocket, Shield, TrendingUp, Zap } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Award, DollarSign, Eye, Flame, MousePointer2, Plus, RefreshCw, Rocket, Shield, TrendingUp, Zap } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from '../dashboard.module.css';
 import { getActivePromotion, getCampaignHistory, getPromotionTiers, getWalletInfo } from './actions';
 import ActivePromotionCard from './ActivePromotionCard';
@@ -27,6 +28,7 @@ const TIER_COLORS: Record<string, string> = {
 };
 
 export default function PromotionsPage() {
+    const router = useRouter();
     const [walletData, setWalletData] = useState<any>(null);
     const [tiers, setTiers] = useState<any[]>([]);
     const [history, setHistory] = useState<any[]>([]);
@@ -34,8 +36,9 @@ export default function PromotionsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [stationId, setStationId] = useState<number | null>(null);
+    const [refreshingSection, setRefreshingSection] = useState<string | null>(null);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             const [wData, tData] = await Promise.all([
                 getWalletInfo(),
@@ -71,11 +74,39 @@ export default function PromotionsPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
+
+    const handleRefresh = async (section: string) => {
+        setRefreshingSection(section);
+        try {
+            if (section === 'wallet') {
+                const wData = await getWalletInfo();
+                setWalletData(wData);
+            } else if (section === 'analytics' || section === 'history') {
+                if (stationId) {
+                    const [hData, activeData] = await Promise.all([
+                        getCampaignHistory(stationId),
+                        getActivePromotion(stationId)
+                    ]);
+                    setHistory(hData || []);
+                    setActivePromo(activeData);
+                }
+            } else if (section === 'plans') {
+                const tData = await getPromotionTiers();
+                setTiers(tData);
+            } else {
+                await fetchData();
+            }
+        } catch (error) {
+            console.error(`Error refreshing ${section}:`, error);
+        } finally {
+            setRefreshingSection(null);
+        }
+    };
 
     // Compute analytics from campaign history
     const analytics = useMemo(() => {
@@ -114,43 +145,66 @@ export default function PromotionsPage() {
             <WalletDashboard
                 wallet={walletData?.wallet}
                 transactions={walletData?.transactions || []}
+                onRefresh={() => handleRefresh('wallet')}
+                isRefreshing={refreshingSection === 'wallet'}
             />
 
             {/* Analytics Summary */}
-            <div className={promoStyles.analyticsSummary}>
-                <div className={promoStyles.analyticsCard}>
-                    <div className={promoStyles.analyticsIcon} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
-                        <Eye size={20} />
-                    </div>
-                    <div className={promoStyles.analyticsLabel}>Total Reach</div>
-                    <div className={promoStyles.analyticsValue}>{analytics.totalReach.toLocaleString()}</div>
+            <div>
+                <div className={promoStyles.sectionHeaderRow}>
+                    <h2>Performance Analytics</h2>
+                    <button
+                        className={refreshingSection === 'analytics' ? promoStyles.refreshBtnSpinning : promoStyles.refreshBtn}
+                        onClick={() => handleRefresh('analytics')}
+                        title="Refresh analytics"
+                    >
+                        <RefreshCw size={16} />
+                    </button>
                 </div>
-                <div className={promoStyles.analyticsCard}>
-                    <div className={promoStyles.analyticsIcon} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
-                        <MousePointer2 size={20} />
+                <div className={promoStyles.analyticsSummary} style={{ marginBottom: 0 }}>
+                    <div className={promoStyles.analyticsCard}>
+                        <div className={promoStyles.analyticsIcon} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
+                            <Eye size={20} />
+                        </div>
+                        <div className={promoStyles.analyticsLabel}>Total Reach</div>
+                        <div className={promoStyles.analyticsValue}>{analytics.totalReach.toLocaleString()}</div>
                     </div>
-                    <div className={promoStyles.analyticsLabel}>Total Clicks</div>
-                    <div className={promoStyles.analyticsValue}>{analytics.totalClicks.toLocaleString()}</div>
-                </div>
-                <div className={promoStyles.analyticsCard}>
-                    <div className={promoStyles.analyticsIcon} style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' }}>
-                        <TrendingUp size={20} />
+                    <div className={promoStyles.analyticsCard}>
+                        <div className={promoStyles.analyticsIcon} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+                            <MousePointer2 size={20} />
+                        </div>
+                        <div className={promoStyles.analyticsLabel}>Total Clicks</div>
+                        <div className={promoStyles.analyticsValue}>{analytics.totalClicks.toLocaleString()}</div>
                     </div>
-                    <div className={promoStyles.analyticsLabel}>Avg. CTR</div>
-                    <div className={promoStyles.analyticsValue}>{analytics.avgCTR}%</div>
-                </div>
-                <div className={promoStyles.analyticsCard}>
-                    <div className={promoStyles.analyticsIcon} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
-                        <DollarSign size={20} />
+                    <div className={promoStyles.analyticsCard}>
+                        <div className={promoStyles.analyticsIcon} style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' }}>
+                            <TrendingUp size={20} />
+                        </div>
+                        <div className={promoStyles.analyticsLabel}>Avg. CTR</div>
+                        <div className={promoStyles.analyticsValue}>{analytics.avgCTR}%</div>
                     </div>
-                    <div className={promoStyles.analyticsLabel}>Total Spent</div>
-                    <div className={promoStyles.analyticsValue}>₦{analytics.totalSpent.toLocaleString()}</div>
+                    <div className={promoStyles.analyticsCard}>
+                        <div className={promoStyles.analyticsIcon} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+                            <DollarSign size={20} />
+                        </div>
+                        <div className={promoStyles.analyticsLabel}>Total Spent</div>
+                        <div className={promoStyles.analyticsValue}>₦{analytics.totalSpent.toLocaleString()}</div>
+                    </div>
                 </div>
             </div>
 
             {/* Dynamic Promotion Tiers */}
-            <div className={promoStyles.promotionHistory} style={{ marginBottom: '32px' }}>
-                <h2 style={{ marginBottom: '16px' }}>Available Boost Plans</h2>
+            <div className={promoStyles.promotionHistory}>
+                <div className={promoStyles.sectionHeaderRow}>
+                    <h2>Available Boost Plans</h2>
+                    <button
+                        className={refreshingSection === 'plans' ? promoStyles.refreshBtnSpinning : promoStyles.refreshBtn}
+                        onClick={() => handleRefresh('plans')}
+                        title="Refresh boost plans"
+                    >
+                        <RefreshCw size={16} />
+                    </button>
+                </div>
                 <div className={promoStyles.boostPlansGrid}>
                     {tiers.filter((t) => ['Quick Boost', 'Flash Sale', 'Area Takeover'].includes(t.name)).map((tier) => (
                         <div
@@ -186,7 +240,16 @@ export default function PromotionsPage() {
 
             {/* Campaign History */}
             <div className={promoStyles.promotionHistory}>
-                <h2>Campaign History</h2>
+                <div className={promoStyles.sectionHeaderRow}>
+                    <h2>Campaign History</h2>
+                    <button
+                        className={refreshingSection === 'history' ? promoStyles.refreshBtnSpinning : promoStyles.refreshBtn}
+                        onClick={() => handleRefresh('history')}
+                        title="Refresh campaign history"
+                    >
+                        <RefreshCw size={16} />
+                    </button>
+                </div>
                 <div className={styles.tableWrap}>
                     <table className={styles.table}>
                         <thead>
@@ -210,7 +273,11 @@ export default function PromotionsPage() {
                                     const displayStatus = campaign.status === 'active' && isExpired ? 'expired' : campaign.status;
 
                                     return (
-                                        <tr key={campaign.id}>
+                                        <tr
+                                            key={campaign.id}
+                                            className={promoStyles.clickableRow}
+                                            onClick={() => router.push(`/dashboard/promotions/${campaign.id}`)}
+                                        >
                                             <td style={{ fontWeight: '600' }}>{campaign.tier?.name}</td>
                                             <td>{new Date(campaign.start_time).toLocaleDateString()} {new Date(campaign.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                                             <td>{new Date(campaign.end_time).toLocaleDateString()} {new Date(campaign.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
@@ -233,7 +300,7 @@ export default function PromotionsPage() {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                                    <td colSpan={7} className={promoStyles.emptyState}>
                                         No promotion history found. Start your first boost above!
                                     </td>
                                 </tr>

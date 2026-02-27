@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { MessageSquare, Calendar, Send, CheckCircle } from 'lucide-react';
-import { respondToReview } from '@/app/dashboard/reputation/actions';
+import { MessageSquare, Calendar, Send, CheckCircle, User } from 'lucide-react';
+import { respondToReview, respondToReport, getScoutProfile } from '@/app/dashboard/reputation/actions';
+import ScoutProfileModal from './ScoutProfileModal';
 import styles from '@/app/dashboard/dashboard.module.css';
 
 interface Review {
@@ -14,6 +15,15 @@ interface Review {
     response: string | null;
     responded_at: string | null;
     user_email?: string;
+    type?: 'review' | 'report';
+    user_id?: string;
+    price?: number;
+    fuel_type?: string;
+    meter_accuracy?: number;
+    profiles?: {
+        full_name: string;
+        avatar_url: string;
+    };
 }
 
 interface ReviewListProps {
@@ -25,11 +35,34 @@ export default function ReviewList({ reviews }: ReviewListProps) {
     const [responseValue, setResponseValue] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    async function handleResponse(reviewId: string) {
+    // Scout Profile Modal State
+    const [isScoutModalOpen, setIsScoutModalOpen] = useState(false);
+    const [scoutData, setScoutData] = useState<any>(null);
+    const [isScoutLoading, setIsScoutLoading] = useState(false);
+
+    async function handleOpenScoutProfile(userId: string) {
+        if (!userId) return;
+        setIsScoutModalOpen(true);
+        setIsScoutLoading(true);
+        try {
+            const data = await getScoutProfile(userId);
+            setScoutData(data);
+        } catch (error) {
+            console.error('Failed to fetch scout profile:', error);
+        } finally {
+            setIsScoutLoading(false);
+        }
+    }
+
+    async function handleResponse(reviewId: string, type?: string) {
         if (!responseValue.trim()) return;
         setIsSubmitting(true);
         try {
-            await respondToReview(reviewId, responseValue);
+            if (type === 'report') {
+                await respondToReport(reviewId, responseValue);
+            } else {
+                await respondToReview(reviewId, responseValue);
+            }
             setRespondingId(null);
             setResponseValue('');
         } catch (error) {
@@ -51,7 +84,17 @@ export default function ReviewList({ reviews }: ReviewListProps) {
                 {reviews.map((review) => (
                     <div key={review.id} className={styles.competitorCard} style={{ flexDirection: 'column', gap: '12px', alignItems: 'stretch' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: (review as any).user_id ? 'pointer' : 'default' }}
+                                onClick={() => (review as any).user_id && handleOpenScoutProfile((review as any).user_id)}
+                                title={(review as any).user_id ? "View Scout Profile" : ""}
+                            >
+                                <div className={styles.avatar} style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>
+                                    {(review as any).profiles?.full_name?.charAt(0) || 'U'}
+                                </div>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                                    {(review as any).profiles?.full_name || 'Anonymous Driver'}
+                                </div>
                                 <div className={styles.sentimentBadge} data-sentiment={review.sentiment}>
                                     {review.sentiment}
                                 </div>
@@ -60,11 +103,48 @@ export default function ReviewList({ reviews }: ReviewListProps) {
                                 </div>
                             </div>
                             <div style={{ color: 'var(--primary)', fontWeight: 700 }}>
-                                {review.rating} ⭐
+                                {review.type === 'report'
+                                    ? (review.price ? 'Price Update' : 'Service Report')
+                                    : `${review.rating} ⭐`}
                             </div>
                         </div>
 
-                        <p style={{ fontSize: '0.95rem', lineHeight: '1.4' }}>&quot;{review.comment}&quot;</p>
+                        {review.type === 'report' && review.price && (
+                            <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+                                <div style={{
+                                    background: 'rgba(59, 130, 246, 0.1)',
+                                    color: '#3b82f6',
+                                    padding: '4px 10px',
+                                    borderRadius: '8px',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 600,
+                                    border: '1px solid rgba(59, 130, 246, 0.2)'
+                                }}>
+                                    {review.fuel_type || 'PMS'}: ₦{review.price}
+                                </div>
+                                {review.meter_accuracy === 100 && (
+                                    <div style={{
+                                        background: 'rgba(34, 197, 94, 0.1)',
+                                        color: '#22c55e',
+                                        padding: '4px 10px',
+                                        borderRadius: '8px',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 600,
+                                        border: '1px solid rgba(34, 197, 94, 0.2)'
+                                    }}>
+                                        ✓ Accurate Pump
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <p style={{ fontSize: '0.95rem', lineHeight: '1.4' }}>
+                            {review.comment ? (
+                                <>&quot;{review.comment}&quot;</>
+                            ) : (
+                                <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>Verified station activity & quality.</span>
+                            )}
+                        </p>
 
                         {review.response ? (
                             <div style={{ background: 'var(--surface)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border)', marginTop: '8px' }}>
@@ -80,7 +160,7 @@ export default function ReviewList({ reviews }: ReviewListProps) {
                                         <textarea
                                             placeholder="Type your apology or response..."
                                             className={styles.input}
-                                            style={{ background: 'var(--surface)', border: '1px solid var(--primary)', height: '80px', padding: '12px' }}
+                                            style={{ background: 'var(--surface)', border: '1px solid var(--primary)', height: '80px', padding: '12px', color: 'var(--text-primary)' }}
                                             value={responseValue}
                                             onChange={(e) => setResponseValue(e.target.value)}
                                         />
@@ -89,7 +169,7 @@ export default function ReviewList({ reviews }: ReviewListProps) {
                                                 className="btn-primary"
                                                 style={{ padding: '6px 16px', fontSize: '0.8rem' }}
                                                 disabled={isSubmitting}
-                                                onClick={() => handleResponse(review.id)}
+                                                onClick={() => handleResponse(review.id, review.type)}
                                             >
                                                 <Send size={14} style={{ marginRight: '6px' }} /> {isSubmitting ? 'Sending...' : 'Send Response'}
                                             </button>
@@ -119,6 +199,13 @@ export default function ReviewList({ reviews }: ReviewListProps) {
                     <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '40px' }}>No reviews yet for this station.</p>
                 )}
             </div>
+
+            <ScoutProfileModal
+                isOpen={isScoutModalOpen}
+                onClose={() => setIsScoutModalOpen(false)}
+                data={scoutData}
+                isLoading={isScoutLoading}
+            />
         </div>
     );
 }

@@ -9,18 +9,23 @@ import {
     Activity,
     AlertTriangle,
     Award,
-    Rocket
+    Rocket,
+    ChevronDown,
+    ChevronUp,
+    Info
 } from 'lucide-react';
 import CompetitorWatch from '@/components/dashboard/overview/CompetitorWatch';
 import FeedbackSnapshot from '@/components/dashboard/overview/FeedbackSnapshot';
 import StockOutToggle from '@/components/dashboard/pricing/StockOutToggle';
 import MarketTrendChart from '@/components/dashboard/overview/MarketTrendChart';
 import MobileQuickUpdate from '@/components/dashboard/overview/MobileQuickUpdate';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 import QuickPriceAction from '@/components/dashboard/overview/QuickPriceAction';
 import RevenueProjection from '@/components/dashboard/overview/RevenueProjection';
+import SmartRecommendations from '@/components/dashboard/overview/SmartRecommendations';
+import DashboardEducation from '@/components/dashboard/overview/DashboardEducation';
 import { getActivePromotion } from './promotions/actions';
 import ActivePromotionCard from './promotions/ActivePromotionCard';
 import Link from 'next/link';
@@ -28,6 +33,9 @@ import Link from 'next/link';
 export default function DashboardOverview() {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    // Added state for the minimizable component
+    const [isEduMinimized, setIsEduMinimized] = useState(false);
+
     const supabase = createClient();
 
     useEffect(() => {
@@ -47,6 +55,16 @@ export default function DashboardOverview() {
                 .select('*')
                 .eq('id', profile?.station_id)
                 .single();
+
+            // 1b. Fetch Official State Price (Fallback)
+            const { data: officialPriceData } = await supabase
+                .from('official_prices')
+                .select('pms_price')
+                .eq('state', station?.state || 'Oyo')
+                .eq('brand', 'all')
+                .single();
+
+            const statePrice = parseFloat(officialPriceData?.pms_price as any) || 950;
 
             // 2. Fetch Nearest 3 Competitors
             const userLat = station?.latitude || 7.404818;
@@ -79,24 +97,26 @@ export default function DashboardOverview() {
                 .slice(0, 3)
                 .map(c => ({
                     ...c,
-                    price_pms: parseFloat(c.price_pms as any) || 645
+                    price_pms: parseFloat(c.price_pms as any) || statePrice
                 }));
 
-            // 3. Fetch Recent Feedback
+            // 3. Fetch Recent Feedback with User Profile
             const { data: feedbacks } = await supabase
                 .from('reviews')
-                .select('*')
+                .select('*, profiles:user_id(full_name, avatar_url)')
                 .eq('station_id', station?.id)
                 .order('created_at', { ascending: false })
                 .limit(5);
 
-            // 4. Fetch User Reports (Ground Truth)
+            // 4. Fetch User Reports (Ground Truth) with Profiles
             const { data: reports } = await supabase
                 .from('price_reports')
-                .select('*')
+                .select('*, profiles:user_id(full_name, avatar_url)')
                 .eq('station_id', station?.id)
                 .order('created_at', { ascending: false })
                 .limit(10);
+
+            const activePromotion = await getActivePromotion(station?.id || 0);
 
             // 5. Fetch Analytics (Daily Visits)
             const { data: analytics } = await supabase
@@ -106,11 +126,29 @@ export default function DashboardOverview() {
                 .order('date', { ascending: false })
                 .limit(2);
 
-            const todayVisits = analytics?.[0]?.daily_visits || 0;
-            const yesterdayVisits = analytics?.[1]?.daily_visits || 0;
+            let todayVisits = analytics?.[0]?.daily_visits || 0;
+            let yesterdayVisits = analytics?.[1]?.daily_visits || 0;
+
+            const nowTime = new Date();
+            const startOfToday = new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate()).toISOString();
+
+            if (todayVisits === 0) {
+                const { count: reportsToday } = await supabase
+                    .from('price_reports')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('station_id', station?.id)
+                    .gte('created_at', startOfToday);
+
+                todayVisits = reportsToday || 0;
+
+                if (activePromotion?.clicks) {
+                    todayVisits += Math.ceil(activePromotion.clicks / 5);
+                }
+            }
+
             const visitGrowth = yesterdayVisits > 0
                 ? ((todayVisits - yesterdayVisits) / yesterdayVisits) * 100
-                : 0;
+                : (todayVisits > 0 ? 100 : 0);
 
             // 6. Fetch Price History for Chart
             const { data: priceHistory } = await supabase
@@ -124,7 +162,7 @@ export default function DashboardOverview() {
             const validCompetitors = nearby?.filter(c => c.price_pms > 0) || [];
             const realMarketAvg = validCompetitors.length > 0
                 ? validCompetitors.reduce((acc, c) => acc + (c.price_pms || 0), 0) / validCompetitors.length
-                : 645;
+                : statePrice;
 
             const priceDiff = (station?.price_pms || 0) - realMarketAvg;
 
@@ -146,9 +184,8 @@ export default function DashboardOverview() {
 
             const analyticsData = analytics as any[] | null;
             const todayAnalytics = analyticsData?.[0];
-
-            // Fallback to yesterday if today is empty (for demo continuity)
-            const displayViews = todayAnalytics?.profile_views || analyticsData?.[1]?.profile_views || 0;
+            const historicalViews = todayAnalytics?.profile_views || analyticsData?.[1]?.profile_views || 0;
+            const displayViews = historicalViews + (activePromotion?.views || 0);
 
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -172,8 +209,6 @@ export default function DashboardOverview() {
             const peakHourLabel = peakHour24
                 ? `${Number(peakHour24) % 12 || 12}${Number(peakHour24) >= 12 ? 'PM' : 'AM'}`
                 : '4PM';
-
-            const activePromotion = await getActivePromotion(station?.id || 0);
 
             setData({
                 station,
@@ -214,10 +249,7 @@ export default function DashboardOverview() {
 
     const containerVars = {
         hidden: { opacity: 0 },
-        show: {
-            opacity: 1,
-            transition: { staggerChildren: 0.1 }
-        }
+        show: { opacity: 1, transition: { staggerChildren: 0.1 } }
     };
 
     const itemVars = {
@@ -226,11 +258,8 @@ export default function DashboardOverview() {
     };
 
     return (
-        <motion.div
-            initial="hidden"
-            animate="show"
-            variants={containerVars}
-        >
+        <motion.div initial="hidden" animate="show" variants={containerVars}>
+            {/* Mobile View remains unchanged */}
             <div className={styles.mobileOnly}>
                 <MobileQuickUpdate
                     station={station}
@@ -248,14 +277,43 @@ export default function DashboardOverview() {
                         <h1>Dashboard Overview</h1>
                         <p>Welcome back! Here&apos;s a summary of your station&apos;s performance.</p>
                     </div>
-                    <div className={styles.headerActions}>
-                        <button className="btn-primary">Daily Report</button>
-                    </div>
                 </motion.header>
 
                 <div className={styles.mainContent}>
+
+                    {/* Left Column: Core Analytics & Charts */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                        {/* Main Stats */}
+
+                        {/* Minimizable Education Banner */}
+                        <motion.div variants={itemVars} style={{ background: 'var(--card-bg, #fff)', borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                            <div
+                                onClick={() => setIsEduMinimized(!isEduMinimized)}
+                                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', cursor: 'pointer', background: 'var(--bg-muted, #f8f9fa)' }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                    <Info size={18} color="var(--primary)" />
+                                    Station Growth Tips & Education
+                                </div>
+                                <button style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                    {isEduMinimized ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                                </button>
+                            </div>
+                            <AnimatePresence>
+                                {!isEduMinimized && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                    >
+                                        <div style={{ padding: '16px', borderTop: '1px solid var(--border)' }}>
+                                            <DashboardEducation />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+
+                        {/* Top KPI Stats Grid */}
                         <div className={styles.statsGrid}>
                             <motion.div variants={itemVars} className={styles.statCard} whileHover={{ y: -5 }}>
                                 <div className={styles.statIcon} style={{ background: 'rgba(168, 85, 247, 0.1)', color: 'var(--primary)' }}>
@@ -268,28 +326,25 @@ export default function DashboardOverview() {
                                 </div>
                             </motion.div>
 
-                            <motion.div variants={itemVars} className={styles.statCard} whileHover={{ y: -5 }}>
-                                <div className={styles.statIcon} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
-                                    <Users size={24} />
-                                </div>
-                                <div className={styles.statLabel}>Daily Customers</div>
-                                <div className={styles.statValue}>{todayVisits.toLocaleString()}</div>
-                                <div className={styles.statChange} style={{ color: visitGrowth >= 0 ? '#22c55e' : '#ef4444' }}>
-                                    {visitGrowth >= 0 ? '+' : ''}{visitGrowth.toFixed(1)}% since yesterday
-                                </div>
+                            <motion.div variants={itemVars} whileHover={{ y: -5 }}>
+                                <Link href="/dashboard/analytics" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                                    <div className={styles.statCard}>
+                                        <div className={styles.statIcon} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
+                                            <Users size={24} />
+                                        </div>
+                                        <div className={styles.statLabel}>Daily Customers</div>
+                                        <div className={styles.statValue}>{todayVisits.toLocaleString()}</div>
+                                        <div className={styles.statChange} style={{ color: visitGrowth >= 0 ? '#22c55e' : '#ef4444' }}>
+                                            {visitGrowth >= 0 ? '+' : ''}{visitGrowth.toFixed(1)}% since yesterday
+                                        </div>
+                                    </div>
+                                </Link>
                             </motion.div>
 
-                            <motion.div variants={itemVars} className={styles.statCard} whileHover={{ y: -5 }}>
-                                <div className={styles.statIcon} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
-                                    <Droplet size={24} />
-                                </div>
-                                <div className={styles.statLabel}>PMS Price (Petrol)</div>
-                                <QuickPriceAction fuelType="PMS" initialPrice={station?.price_pms || 645} />
-                                <div className={styles.statChange} style={{ color: 'var(--text-secondary)' }}>Click to quick-update</div>
-                            </motion.div>
-
-                            <motion.div variants={itemVars}>
-                                <RevenueProjection todayVisits={displayViews} price={station?.price_pms || 645} />
+                            <motion.div variants={itemVars} whileHover={{ y: -5 }}>
+                                <Link href="/dashboard/analytics" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                                    <RevenueProjection todayVisits={todayVisits} price={station?.price_pms || statePrice} />
+                                </Link>
                             </motion.div>
 
                             {activePromotion && (
@@ -299,11 +354,7 @@ export default function DashboardOverview() {
                             )}
                         </div>
 
-                        {/* Module Snapshots */}
-                        <motion.div variants={itemVars}>
-                            <FeedbackSnapshot feedbacks={feedbacks || []} />
-                        </motion.div>
-
+                        {/* Chart Area */}
                         <motion.div variants={itemVars} className={styles.chartArea}>
                             <div className={styles.sectionHeader}>
                                 <h2>Market Opportunity Trend</h2>
@@ -311,105 +362,61 @@ export default function DashboardOverview() {
                             </div>
                             <MarketTrendChart data={trendData} />
                         </motion.div>
+
+                        {/* Combined Feedback & Reports Snapshot */}
+                        <motion.div variants={itemVars}>
+                            <FeedbackSnapshot feedbacks={[
+                                ...(feedbacks || []).map(f => ({ ...f, type: 'review' })),
+                                ...(reports || []).map(r => ({
+                                    id: r.id,
+                                    comment: r.notes || "",
+                                    price: r.price,
+                                    fuel_type: r.fuel_type,
+                                    meter_accuracy: r.meter_accuracy,
+                                    rating: 5,
+                                    sentiment: 'neutral',
+                                    created_at: r.created_at,
+                                    type: 'report',
+                                    user_id: r.user_id,
+                                    profiles: (r as any).profiles,
+                                    response: (r as any).response
+                                }))
+                            ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())} />
+                        </motion.div>
                     </div>
 
-                    {/* Sidebar Widgets */}
+                    {/* Right Column / Sidebar Widgets: Operations & Intelligence */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                        <motion.div variants={itemVars}>
+
+                        {/* Action Panel - Grouped Controls Together */}
+                        <motion.div variants={itemVars} style={{ background: 'var(--card-bg, #fff)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                            <h3 style={{ marginBottom: '16px', fontSize: '1.1rem', fontWeight: 600 }}>Quick Operations</h3>
+
+                            <div style={{ marginBottom: '20px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#3b82f6', fontWeight: 500 }}>
+                                    <Droplet size={18} /> Update PMS Price
+                                </div>
+                                <QuickPriceAction fuelType="PMS" initialPrice={station?.price_pms || statePrice} />
+                            </div>
+
+                            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />
+
                             <StockOutToggle stationId={station?.id} isOutOfStock={station?.is_out_of_stock || false} />
+                        </motion.div>
+
+                        <motion.div variants={itemVars}>
+                            <SmartRecommendations
+                                priceDiff={priceDiff}
+                                activePromotion={activePromotion}
+                                isOutOfStock={station?.is_out_of_stock || false}
+                                peakHourLabel={peakHourLabel}
+                            />
                         </motion.div>
 
                         <motion.div variants={itemVars}>
                             <CompetitorWatch competitors={formattedCompetitors} yourPrice={station?.price_pms || 1} />
                         </motion.div>
 
-                        <motion.div variants={itemVars} className={styles.recentReports}>
-                            <div className={styles.sectionHeader}>
-                                <motion.h2
-                                    animate={{
-                                        color: priceDiff > 0 ? ['#fbbf24', '#fff'] : '#fff'
-                                    }}
-                                    transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
-                                >
-                                    Smart Recommendations
-                                </motion.h2>
-                            </div>
-
-                            {priceDiff > 0 ? (
-                                <motion.div
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    className={`${styles.alertItem} ${styles.recommendation}`}
-                                    style={{ background: 'rgba(251, 191, 36, 0.1)', border: '1px solid #fbbf24' }}
-                                >
-                                    <TrendingUp size={20} color="#fbbf24" />
-                                    <div>
-                                        <strong style={{ color: '#fbbf24' }}>Price Opportunity</strong>
-                                        <p>You are ₦{Math.round(priceDiff)} above average. Lowering by ₦5 could increase visits by ~12%.</p>
-                                    </div>
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    className={`${styles.alertItem} ${styles.recommendation}`}
-                                    style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid #22c55e' }}
-                                >
-                                    <Award size={20} color="#22c55e" />
-                                    <div>
-                                        <strong style={{ color: '#22c55e' }}>Highly Competitive</strong>
-                                        <p>You have the best price in this area. Maintain this to build driver loyalty.</p>
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            {!activePromotion && (
-                                <Link href="/dashboard/promotions" style={{ textDecoration: 'none' }}>
-                                    <motion.div
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className={styles.alertItem}
-                                        style={{
-                                            background: 'linear-gradient(90deg, rgba(155, 89, 255, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)',
-                                            border: '1px solid var(--primary)',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        <Rocket size={20} color="var(--primary)" />
-                                        <div>
-                                            <strong style={{ color: 'var(--primary)' }}>Boost Visibility</strong>
-                                            <p>Increase visits by up to 40% with a 2-hour Flash Sale.</p>
-                                        </div>
-                                    </motion.div>
-                                </Link>
-                            )}
-
-                            {station?.is_out_of_stock ? (
-                                <div className={styles.alertItem} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444' }}>
-                                    <AlertTriangle size={20} color="#ef4444" />
-                                    <div>
-                                        <strong style={{ color: '#ef4444' }}>Station Offline</strong>
-                                        <p>Drivers cannot see you in the app.</p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className={styles.alertItem}>
-                                    <Activity size={20} color="#22c55e" />
-                                    <div>
-                                        <strong>All Systems Normal</strong>
-                                        <p>Station is visible to all drivers.</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className={styles.alertItem}>
-                                <Award size={20} color="var(--primary)" />
-                                <div>
-                                    <strong>Peak Traffic Forecast</strong>
-                                    <p>Heavy traffic expected at {peakHourLabel}. Prepare pumps.</p>
-                                </div>
-                            </div>
-                        </motion.div>
                     </div>
                 </div>
             </div>

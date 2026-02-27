@@ -3,6 +3,7 @@ import styles from '../dashboard.module.css';
 import TrustScoreCards from '@/components/dashboard/reputation/TrustScoreCards';
 import ReviewList from '@/components/dashboard/reputation/ReviewList';
 import VerificationProgress from '@/components/dashboard/reputation/VerificationProgress';
+import ReputationHelp from '@/components/dashboard/reputation/ReputationHelp';
 
 export default async function ReputationPage() {
     const supabase = await createClient();
@@ -27,7 +28,7 @@ export default async function ReputationPage() {
     // 2. Fetch Aggregated Metrics
     const { data: reviewStats } = await supabase
         .from('reviews')
-        .select('rating_meter, rating_quality')
+        .select('rating_meter')
         .eq('station_id', station?.id);
 
     const { count: reportsCount } = await supabase
@@ -40,30 +41,60 @@ export default async function ReputationPage() {
         .select('*', { count: 'exact', head: true })
         .eq('station_id', station?.id);
 
-    // 3. Fetch Reviews
+    // 3. Fetch Reviews & Price Reports with User Profile
     const { data: reviews } = await supabase
         .from('reviews')
-        .select('*')
+        .select('*, profiles:user_id(full_name, avatar_url)')
         .eq('station_id', station?.id)
         .order('created_at', { ascending: false });
 
+    const { data: pReports } = await supabase
+        .from('price_reports')
+        .select('*, profiles:user_id(full_name, avatar_url)')
+        .eq('station_id', station?.id)
+        .order('created_at', { ascending: false });
+
+    // 4. Unify into a single activity feed
+    const unifiedFeed = [
+        ...(reviews || []).map(r => ({ ...r, type: 'review' })),
+        ...(pReports || []).map(p => ({
+            ...p,
+            type: 'report',
+            rating: p.rating || 5, // Reports are implicitly 5-star if they are positive updates
+            comment: p.notes // Use the raw notes as the comment
+        }))
+    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
     // Real logic for aggregate scores
     const totalReviews = reviews?.length || 0;
-    const meterRating = totalReviews
-        ? (reviews?.reduce((acc, r) => acc + (r.rating_meter || 0), 0) || 0) / totalReviews
-        : 0; // Show 0 if no reports yet to be truthful
+    const reviewsWithMeter = reviews?.filter(r => r.rating_meter !== undefined && r.rating_meter !== null) || [];
 
-    const qualityRating = totalReviews
-        ? (reviews?.reduce((acc, r) => acc + (r.rating_quality || 0), 0) || 0) / totalReviews
-        : 0;
+    // Meter Accuracy Aggregation: (RatingMeter from Reviews + MeterAccuracy from Reports)
+    // Map accuracy 100 -> 5.0, failure -> 1.0. If null, assume 5.0 (Trust by Default)
+    const reportMeterScores = (pReports || []).map(p => p.meter_accuracy === 100 || p.meter_accuracy === null ? 5 : 1);
+    const combinedMeterScores = [
+        ...reviewsWithMeter.map(r => r.rating_meter),
+        ...reportMeterScores
+    ];
+
+    const meterRating = combinedMeterScores.length
+        ? combinedMeterScores.reduce((acc, val) => acc + (val || 0), 0) / combinedMeterScores.length
+        : 5.0; // Optimistic Baseline (Sync with Mobile App)
 
     // Real Trust Points Calculation (Gamified)
     // 1. Verification Base: 300 pts
     const verificationPoints = station?.is_verified ? 300 : 0;
 
-    // 2. Meter Accuracy: Up to 300 pts (Based on reports)
-    // If no reports, give neutral 150. If accurate, 300. If adjusted, 0.
-    const accuracyRatio = reportsCount ? (await supabase.from('price_reports').select('*', { count: 'exact', head: true }).eq('station_id', station?.id).eq('meter_accuracy', 100)).count || 0 / reportsCount : 0.5;
+    // 2. Meter Accuracy: Up to 300 pts (Based on reports + reviews)
+    const accuracyCountFromReviews = reviewsWithMeter.filter(r => (r.rating_meter || 0) >= 4).length;
+
+    // In "Trust by Default" Mode, we only count explicit failures as negatives
+    const accuracyFailureFromReports = (pReports || []).filter(p => p.meter_accuracy !== null && p.meter_accuracy !== 100).length;
+    const totalChecks = combinedMeterScores.length;
+
+    const accuracyRatio = totalChecks
+        ? (combinedMeterScores.filter(s => (s || 0) >= 4).length / totalChecks)
+        : 1.0; // Optimistic Baseline
     const accuracyPoints = Math.round(accuracyRatio * 300);
 
     // 3. Community Engagement: Up to 200 pts
@@ -81,15 +112,25 @@ export default async function ReputationPage() {
     // Calculate Star Rating (Weighted)
     // 40% Meter Accuracy, 40% User Reviews, 20% Verification Status
     const reviewAvg = reviews?.reduce((acc, r) => acc + r.rating, 0) || 0;
-    const avgReviewScore = totalReviews ? reviewAvg / totalReviews : 0;
+    const avgReviewScore = totalReviews ? reviewAvg / totalReviews : 5.0; // Optimistic Baseline
 
     const weightedRating = (
         (accuracyRatio * 5 * 0.4) +
         (avgReviewScore * 0.4) +
         ((station?.is_verified ? 5 : 0) * 0.2)
     );
-    // If no data, default to 0 or 4.0 for new stations
-    const displayRating = totalReviews > 0 ? weightedRating.toFixed(1) : (station?.is_verified ? '4.0' : '0.0');
+    // Every station baselines at 5.0 (100% in app terms)
+    const displayRating = (totalReviews > 0 || reportsCount > 0) ? weightedRating.toFixed(1) : '5.0';
+
+    // MOBILE APP SYNC: Trust Score as Percentage
+    const trustScorePercent = Math.round((Number(displayRating) / 5) * 100);
+
+    // GOLD STATUS MILESTONES (Sync with Mobile App)
+    const milestones = {
+        trustScoreGte90: trustScorePercent >= 90,
+        reviewsGte10: (totalReviews + (reportsCount || 0)) >= 10,
+        responseRateGte90: totalReviews > 0 ? (responseCount / totalReviews) >= 0.9 : true
+    };
 
     return (
         <div className={styles.dashboard}>
@@ -102,20 +143,22 @@ export default async function ReputationPage() {
 
             <div className={styles.mainContent}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <ReputationHelp />
                     <TrustScoreCards
                         meterRating={meterRating}
-                        qualityRating={qualityRating}
                         totalReviews={totalReviews}
-                        overallRating={displayRating}
+                        totalReports={reportsCount}
+                        overallRating={trustScorePercent.toString() + '%'} // Show as %
+                        isVerified={station?.is_verified || false}
                     />
 
-                    <ReviewList reviews={reviews || []} />
+                    <ReviewList reviews={unifiedFeed} />
                 </div>
 
                 <div>
                     <VerificationProgress
                         isVerified={station?.is_verified || false}
-                        points={trustPoints}
+                        milestones={milestones}
                     />
                 </div>
             </div>

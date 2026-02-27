@@ -5,13 +5,20 @@ import styles from '@/app/dashboard/dashboard.module.css';
 
 interface TrustScoreCardsProps {
     meterRating: number;
-    qualityRating: number;
     totalReviews: number;
+    totalReports?: number;
     overallRating?: string;
+    isVerified?: boolean;
 }
 
-export default function TrustScoreCards({ meterRating, qualityRating, totalReviews, overallRating }: TrustScoreCardsProps) {
-    const displayRating = overallRating || ((meterRating + qualityRating) / 2).toFixed(1);
+export default function TrustScoreCards({ meterRating, totalReviews, totalReports, overallRating, isVerified }: TrustScoreCardsProps) {
+    const displayRating = overallRating || meterRating.toFixed(1);
+    const combinedMeterCount = (totalReports || 0) + totalReviews;
+
+    // Parse the numeric value for stars/logic (handle "100%" or "4.5")
+    const numericRating = typeof displayRating === 'string' && displayRating.endsWith('%')
+        ? (parseFloat(displayRating) / 100) * 5
+        : parseFloat(displayRating.toString());
 
     const renderStars = (rating: number) => {
         return Array.from({ length: 5 }).map((_, i) => (
@@ -31,12 +38,17 @@ export default function TrustScoreCards({ meterRating, qualityRating, totalRevie
                     <Star size={24} />
                 </div>
                 <div className={styles.statLabel}>Station Trust Score</div>
-                <div className={styles.statValue}>{displayRating} <span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>/ 5.0</span></div>
-                <div className={styles.statChange} style={{ color: Number(displayRating) >= 4.0 ? '#22c55e' : '#eab308' }}>
-                    {Number(displayRating) >= 4.0 ? 'Excellent Reputation' : 'Needs Improvement'}
+                <div className={styles.statValue}>
+                    {displayRating}
+                    {!displayRating.toString().includes('%') && (
+                        <span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>/ 5.0</span>
+                    )}
+                </div>
+                <div className={styles.statChange} style={{ color: numericRating >= 4.0 ? '#22c55e' : '#eab308' }}>
+                    {numericRating >= 4.5 ? 'Excellent Reputation' : numericRating >= 3.5 ? 'Good Reputation' : 'Needs Improvement'}
                 </div>
                 <div className={styles.starRow}>
-                    {renderStars(Number(displayRating))}
+                    {renderStars(numericRating)}
                 </div>
             </div>
 
@@ -50,21 +62,7 @@ export default function TrustScoreCards({ meterRating, qualityRating, totalRevie
                     {meterRating > 0 ? renderStars(meterRating) : <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Waiting for feedback</span>}
                 </div>
                 <div className={styles.statChange} style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-                    {totalReviews > 0 ? `Based on ${totalReviews} reports` : 'No reviews recorded'}
-                </div>
-            </div>
-
-            <div className={styles.statCard}>
-                <div className={styles.statIcon} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
-                    <Fuel size={24} />
-                </div>
-                <div className={styles.statLabel}>Fuel Quality</div>
-                <div className={styles.statValue}>{qualityRating > 0 ? qualityRating.toFixed(1) : 'N/A'}</div>
-                <div className={styles.starRow}>
-                    {qualityRating > 0 ? renderStars(qualityRating) : <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>No data yet</span>}
-                </div>
-                <div className={styles.statChange} style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-                    {totalReviews > 0 ? 'Verified by users' : 'Encourage users to rate'}
+                    {combinedMeterCount > 0 ? `Based on ${combinedMeterCount} checks` : 'Initial Baseline'}
                 </div>
             </div>
         </div>

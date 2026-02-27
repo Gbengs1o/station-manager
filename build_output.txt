@@ -1,0 +1,106 @@
+﻿node.exe : ΓÜá 
+Warning: Next.js 
+inferred your 
+workspace root, but 
+it may not be correct.
+At C:\Program Files\no
+dejs\npx.ps1:29 char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (ΓÜá Warnin   
+ g: Ne...not be co    
+rrect.:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+ We detected multiple 
+lockfiles and 
+selected the 
+directory of 
+C:\Users\PC USER\packa
+ge-lock.json as the 
+root directory.
+ To silence this 
+warning, set 
+`turbopack.root` in 
+your Next.js config, 
+or consider removing 
+one of the lockfiles 
+if it's not needed.
+   See https://nextjs.
+org/docs/app/api-refer
+ence/config/next-confi
+g-js/turbopack#root-di
+rectory for more 
+information.
+ Detected additional 
+lockfiles: 
+   * C:\Users\PC USER\
+OneDrive\Documents\fyn
+dfuelststionmanagrdash
+board\package-lock.jso
+n
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 14.0s
+  Running TypeScript ...
+Failed to compile.
+
+./src/app/dashboard/pr
+omotions/actions.ts:18
+5:13
+Type error: Type 
+'string | undefined' 
+is not assignable to 
+type 'string'.
+  Type 'undefined' is 
+not assignable to 
+type 'string'.
+
+[0m [90m 183 |[39m 
+    [36mtry[39m {
+ [90m 184 |[39m     
+    [36mconst[39m 
+response [33m=[39m 
+[36mawait[39m paysta
+ck[33m.[39mtransacti
+on[33m.[39minitializ
+e({
+[31m[1m>[22m[39m[
+90m 185 |[39m        
+     email[33m:[39m 
+user[33m.[39memail[
+33m,[39m
+ [90m     |[39m     
+        
+[31m[1m^[22m[39m
+ [90m 186 |[39m     
+        
+amount[33m:[39m 
+amount [33m*[39m [3
+5m100[39m[33m,[39m 
+[90m// Paystack uses 
+kobo[39m
+ [90m 187 |[39m     
+        callback_url[
+33m:[39m [32m`${proc
+ess.env.NEXT_PUBLIC_SI
+TE_URL}/dashboard/prom
+otions/verify`[39m[3
+3m,[39m
+ [90m 188 |[39m     
+        
+metadata[33m:[39m 
+{[0m
+Next.js build worker 
+exited with code: 1 
+and signal: null

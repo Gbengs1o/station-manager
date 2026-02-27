@@ -2,7 +2,7 @@
 
 import styles from '@/app/dashboard/dashboard.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useRef, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
 
 interface PriceLog {
@@ -19,13 +19,12 @@ const PAGE_SIZE = 7;
 
 export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryChartProps) {
     const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
-    // Start from the latest data (end of array)
     const [startIndex, setStartIndex] = useState(Math.max(0, logs.length - PAGE_SIZE));
 
     if (!logs || logs.length === 0) {
         return (
             <div className={styles.chartArea} style={{ padding: '60px', textAlign: 'center', opacity: 0.5 }}>
-                <Info size={40} style={{ marginBottom: '16px' }} />
+                <Info size={40} style={{ marginBottom: '16px', margin: '0 auto' }} />
                 <h3>No Price History Yet</h3>
                 <p>Start updating your prices to see trends here.</p>
             </div>
@@ -42,7 +41,7 @@ export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryCh
     // Safety check for range to avoid division by zero
     const maxVal = Math.max(...prices, stateAverage);
     const minVal = Math.min(...prices, stateAverage);
-    const range = (maxVal - minVal) || 20; // Default to 20 if range is 0
+    const range = (maxVal - minVal) || 20;
     const padding = range * 0.15;
 
     const maxPrice = maxVal + padding;
@@ -52,10 +51,10 @@ export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryCh
     const dataPoints = useMemo(() => visibleLogs.map((log, i) => {
         const x = visibleLogs.length > 1
             ? (i / (visibleLogs.length - 1)) * 100
-            : 50; // Center if only one point
+            : 50;
         return {
             x,
-            y: 100 - ((log.price - minPrice) / finalRange) * 100,
+            y: 100 - ((log.price - minPrice) / finalRange) * 100, // 0 is top, 100 is bottom
             price: log.price,
             date: new Date(log.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
         };
@@ -64,7 +63,6 @@ export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryCh
     // Cubic Bezier path generator
     const linePath = useMemo(() => {
         if (dataPoints.length < 2) {
-            // If only one point, draw a short horizontal line centered
             if (dataPoints.length === 1) {
                 return `M 40,${dataPoints[0].y} L 60,${dataPoints[0].y}`;
             }
@@ -81,7 +79,7 @@ export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryCh
     }, [dataPoints]);
 
     const areaPath = dataPoints.length > 1
-        ? `${linePath} L 100,105 L 0,105 Z`
+        ? `${linePath} L 100,100 L 0,100 Z`
         : "";
 
     const stateAvgY = 100 - ((stateAverage - minPrice) / finalRange) * 100;
@@ -89,15 +87,16 @@ export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryCh
     // Only show Markers if we have enough points and meaningful variance
     const showMarkers = visibleLogs.length > 2 && (maxVal - minVal > 2);
     const highPoint = showMarkers ? dataPoints.reduce((max, p) => p.price > max.price ? p : max, dataPoints[0]) : null;
-    const lowPoint = showMarkers ? dataPoints.reduce((min, p) => p.price < min.price ? p : min, dataPoints[0]) : null;
 
     return (
-        <div className={styles.chartArea} style={{ position: 'relative', overflow: 'hidden' }}>
+        <div className={styles.chartArea} style={{ position: 'relative', overflow: 'visible' }}>
+
+            {/* Header Section */}
             <div className={styles.sectionHeader}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <div>
                         <h2 style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0 }}>Market Price Analytics</h2>
-                        <p style={{ opacity: 0.7, fontSize: '0.85rem' }}>30-Day performance window</p>
+                        <p style={{ opacity: 0.7, fontSize: '0.85rem', margin: '4px 0 0 0' }}>30-Day performance window</p>
                     </div>
 
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -110,7 +109,8 @@ export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryCh
                                 color: startIndex === 0 ? 'rgba(255,255,255,0.2)' : 'white',
                                 padding: '6px',
                                 borderRadius: '8px',
-                                cursor: startIndex === 0 ? 'default' : 'pointer'
+                                cursor: startIndex === 0 ? 'default' : 'pointer',
+                                display: 'flex'
                             }}
                         >
                             <ChevronLeft size={18} />
@@ -124,7 +124,8 @@ export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryCh
                                 color: startIndex >= logs.length - PAGE_SIZE ? 'rgba(255,255,255,0.2)' : 'white',
                                 padding: '6px',
                                 borderRadius: '8px',
-                                cursor: startIndex >= logs.length - PAGE_SIZE ? 'default' : 'pointer'
+                                cursor: startIndex >= logs.length - PAGE_SIZE ? 'default' : 'pointer',
+                                display: 'flex'
                             }}
                         >
                             <ChevronRight size={18} />
@@ -136,23 +137,88 @@ export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryCh
                 </div>
             </div>
 
+            {/* Chart Container */}
             <div
-                className={styles.placeholderChart}
                 style={{
-                    padding: '40px 0px 40px 0px',
-                    display: 'block',
+                    position: 'relative',
+                    height: '280px',
                     background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.5) 100%)',
-                    height: '320px',
+                    borderRadius: '12px',
                     boxShadow: 'inset 0 0 40px rgba(0,0,0,0.3)',
                     border: '1px solid rgba(255,255,255,0.05)',
-                    marginTop: '20px'
+                    marginTop: '10px'
                 }}
                 onMouseLeave={() => setHoveredPoint(null)}
             >
+                {/* 1. HTML Layer for Non-Stretched Elements (Text, Labels, Markers) */}
+                <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
+
+                    {/* State Avg HTML Text */}
+                    <div style={{
+                        position: 'absolute',
+                        top: `${stateAvgY}%`,
+                        left: '10px',
+                        transform: 'translateY(-120%)',
+                        color: '#f59e0b',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.5px'
+                    }}>
+                        OYO AVG: ₦{stateAverage}
+                    </div>
+
+                    {/* Peak Marker in HTML to prevent oval stretching */}
+                    {highPoint && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            key={`high-${startIndex}`}
+                            style={{
+                                position: 'absolute',
+                                left: `${highPoint.x}%`,
+                                top: `${highPoint.y}%`,
+                                transform: 'translate(-50%, -50%)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '4px'
+                            }}
+                        >
+                            <div style={{ color: '#22c55e', fontSize: '0.65rem', fontWeight: 800, transform: 'translateY(-100%)', position: 'absolute', top: '-6px' }}>
+                                PEAK
+                            </div>
+                            <div style={{
+                                width: '10px',
+                                height: '10px',
+                                background: 'rgba(34, 197, 94, 0.2)',
+                                border: '2px solid #22c55e',
+                                borderRadius: '50%'
+                            }} />
+                        </motion.div>
+                    )}
+
+                    {/* Hover Active Dot */}
+                    {hoveredPoint !== null && (
+                        <div style={{
+                            position: 'absolute',
+                            left: `${dataPoints[hoveredPoint].x}%`,
+                            top: `${dataPoints[hoveredPoint].y}%`,
+                            width: '12px',
+                            height: '12px',
+                            background: 'var(--primary)',
+                            border: '3px solid #fff',
+                            borderRadius: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            boxShadow: '0 0 10px rgba(0,0,0,0.5)'
+                        }} />
+                    )}
+                </div>
+
+                {/* 2. Scalable SVG Layer for Grid & Paths */}
                 <svg
-                    viewBox="0 -5 100 110"
+                    viewBox="0 0 100 100"
                     preserveAspectRatio="none"
-                    style={{ width: '100%', height: '100%', overflow: 'visible' }}
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 1 }}
                 >
                     <defs>
                         <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
@@ -160,27 +226,44 @@ export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryCh
                             <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
                         </linearGradient>
 
-                        <pattern id="dotPattern" x="0" y="0" width="10" height="20" patternUnits="userSpaceOnUse">
-                            <circle cx="0.5" cy="0.5" r="0.2" fill="rgba(255,255,255,0.1)" />
-                        </pattern>
-
                         <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feGaussianBlur stdDeviation="1" result="blur" />
+                            <feGaussianBlur stdDeviation="2" result="blur" />
                             <feComposite in="SourceGraphic" in2="blur" operator="over" />
                         </filter>
                     </defs>
 
                     {/* Background Grid */}
-                    <rect width="100" height="100" fill="url(#dotPattern)" />
                     {[0, 25, 50, 75, 100].map(val => (
-                        <line key={`grid-${val}`} x1="0" y1={val} x2="100" y2={val} stroke="rgba(255,255,255,0.05)" strokeWidth="0.1" />
+                        <line
+                            key={`grid-${val}`}
+                            x1="0" y1={val} x2="100" y2={val}
+                            stroke="rgba(255,255,255,0.05)"
+                            vectorEffect="non-scaling-stroke" // PREVENTS STRETCHING
+                            strokeWidth="1"
+                        />
                     ))}
 
                     {/* State Average Line */}
-                    <line x1="0" y1={stateAvgY} x2="100" y2={stateAvgY} stroke="#f59e0b" strokeWidth="0.3" strokeDasharray="1,1" />
-                    <text x="1" y={stateAvgY - 2} fill="#f59e0b" style={{ fontSize: '2.5px', fontWeight: 600 }}>OYO AVG: ₦{stateAverage}</text>
+                    <line
+                        x1="0" y1={stateAvgY} x2="100" y2={stateAvgY}
+                        stroke="#f59e0b"
+                        vectorEffect="non-scaling-stroke"
+                        strokeWidth="1.5"
+                        strokeDasharray="4,4"
+                    />
 
-                    {/* Data Line & Area */}
+                    {/* Active Point Vertical Line */}
+                    {hoveredPoint !== null && (
+                        <line
+                            x1={dataPoints[hoveredPoint].x} y1="0"
+                            x2={dataPoints[hoveredPoint].x} y2="100"
+                            stroke="rgba(255,255,255,0.2)"
+                            vectorEffect="non-scaling-stroke"
+                            strokeWidth="1"
+                        />
+                    )}
+
+                    {/* Data Area & Line */}
                     <AnimatePresence mode="wait">
                         <motion.g key={startIndex}>
                             {areaPath && (
@@ -194,44 +277,32 @@ export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryCh
                             <motion.path
                                 initial={{ pathLength: 0 }}
                                 animate={{ pathLength: 1 }}
-                                transition={{ duration: 0.8 }}
+                                transition={{ duration: 0.8, ease: "easeOut" }}
                                 d={linePath}
                                 fill="none"
                                 stroke="var(--primary)"
-                                strokeWidth="1.2"
+                                vectorEffect="non-scaling-stroke" // KEEPS LINE CRISP
+                                strokeWidth="3"
                                 strokeLinecap="round"
                                 style={{ filter: 'url(#lineGlow)' }}
                             />
                         </motion.g>
                     </AnimatePresence>
+                </svg>
 
-                    {/* Markers */}
-                    {highPoint && (
-                        <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={`high-${startIndex}`}>
-                            <circle cx={highPoint.x} cy={highPoint.y} r="2" fill="rgba(34, 197, 94, 0.2)" stroke="#22c55e" strokeWidth="0.1" />
-                            <text x={highPoint.x} y={highPoint.y - 4} fill="#22c55e" textAnchor="middle" style={{ fontSize: '2.2px', fontWeight: 800 }}>PEAK</text>
-                        </motion.g>
-                    )}
-
-                    {/* Hover Interaction Layer */}
-                    <rect width="100" height="100" fill="transparent" onMouseMove={(e) => {
+                {/* 3. Invisible Interaction Layer */}
+                <div
+                    style={{ position: 'absolute', inset: 0, zIndex: 20 }}
+                    onMouseMove={(e) => {
                         const bounds = e.currentTarget.getBoundingClientRect();
                         const x = ((e.clientX - bounds.left) / bounds.width) * 100;
                         const closest = dataPoints.reduce((prev, curr, idx) =>
                             Math.abs(curr.x - x) < Math.abs(dataPoints[prev].x - x) ? idx : prev, 0);
                         setHoveredPoint(closest);
-                    }} />
+                    }}
+                />
 
-                    {/* Active Point Indicator */}
-                    {hoveredPoint !== null && (
-                        <g>
-                            <line x1={dataPoints[hoveredPoint].x} y1="0" x2={dataPoints[hoveredPoint].x} y2="100" stroke="rgba(255,255,255,0.2)" strokeWidth="0.2" />
-                            <circle cx={dataPoints[hoveredPoint].x} cy={dataPoints[hoveredPoint].y} r="1.5" fill="var(--primary)" stroke="#fff" strokeWidth="0.4" />
-                        </g>
-                    )}
-                </svg>
-
-                {/* Tooltip */}
+                {/* 4. Tooltip */}
                 <AnimatePresence>
                     {hoveredPoint !== null && (
                         <motion.div
@@ -242,40 +313,52 @@ export default function PriceHistoryChart({ logs, stateAverage }: PriceHistoryCh
                                 position: 'absolute',
                                 left: `${dataPoints[hoveredPoint].x}%`,
                                 top: `${dataPoints[hoveredPoint].y}%`,
-                                transform: 'translate(-50%, -120%)',
-                                background: 'rgba(20, 20, 25, 0.9)',
+                                transform: 'translate(-50%, -130%)',
+                                background: 'rgba(20, 20, 25, 0.95)',
                                 backdropFilter: 'blur(8px)',
                                 border: '1px solid var(--primary)',
-                                padding: '6px 12px',
+                                padding: '8px 14px',
                                 borderRadius: '10px',
                                 zIndex: 50,
-                                pointerEvents: 'none'
+                                pointerEvents: 'none',
+                                whiteSpace: 'nowrap',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
                             }}
                         >
-                            <div style={{ fontSize: '0.6rem', opacity: 0.6, textTransform: 'uppercase' }}>{dataPoints[hoveredPoint].date}</div>
-                            <div style={{ fontSize: '1rem', fontWeight: 800 }}>₦{dataPoints[hoveredPoint].price}</div>
+                            <div style={{ fontSize: '0.65rem', opacity: 0.7, textTransform: 'uppercase', marginBottom: '2px' }}>
+                                {dataPoints[hoveredPoint].date}
+                            </div>
+                            <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>
+                                ₦{dataPoints[hoveredPoint].price}
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 10px', marginTop: '20px' }}>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{visibleLogs[0].date}</span>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{visibleLogs[visibleLogs.length - 1].date}</span>
-                </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
+            {/* Date Labels below chart */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 10px 0 10px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
+                    {visibleLogs[0].date}
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
+                    {visibleLogs[visibleLogs.length - 1].date}
+                </span>
+            </div>
+
+            {/* Legend & Pagination Info */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', padding: '0 10px' }}>
                 <div style={{ display: 'flex', gap: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '10px', height: '10px', background: 'var(--primary)', borderRadius: '2px' }}></div>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Your Price</span>
+                        <div style={{ width: '12px', height: '12px', background: 'var(--primary)', borderRadius: '3px' }}></div>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Your Price</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '12px', height: '0', borderTop: '2px dashed #f59e0b' }}></div>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>State Avg</span>
+                        <div style={{ width: '16px', height: '0', borderTop: '2px dashed #f59e0b' }}></div>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>State Avg</span>
                     </div>
                 </div>
-                <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>
+                <div style={{ fontSize: '0.8rem', opacity: 0.6, fontWeight: 500 }}>
                     Showing {startIndex + 1}-{Math.min(startIndex + PAGE_SIZE, logs.length)} of {logs.length} updates
                 </div>
             </div>

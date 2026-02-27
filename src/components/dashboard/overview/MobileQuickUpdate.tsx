@@ -129,14 +129,16 @@ export default function MobileQuickUpdate({
 
             {/* 2. Horizontal Analytics Widgets */}
             <motion.div variants={itemVars} className={styles.widgetScroll}>
-                <div className={styles.miniWidget}>
-                    <div className={styles.widgetLabel}>Today's Views</div>
-                    <div className={styles.widgetValue}>{totalViews}</div>
-                    <div className={`${styles.widgetTrend} ${styles.trendUp}`}>
-                        <TrendingUp size={12} />
-                        <span>+12% vs yst</span>
-                    </div>
-                </div>
+                <Link href="/dashboard/analytics" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <motion.div whileTap={{ scale: 0.95 }} className={styles.miniWidget}>
+                        <div className={styles.widgetLabel}>Today&apos;s Views</div>
+                        <div className={styles.widgetValue}>{totalViews}</div>
+                        <div className={`${styles.widgetTrend} ${styles.trendUp}`}>
+                            <TrendingUp size={12} />
+                            <span>+12% vs yst</span>
+                        </div>
+                    </motion.div>
+                </Link>
                 <div className={styles.miniWidget}>
                     <div className={styles.widgetLabel}>Trust Score</div>
                     <div className={styles.widgetValue}>4.2</div>
@@ -145,11 +147,13 @@ export default function MobileQuickUpdate({
                         <span>Verified</span>
                     </div>
                 </div>
-                <div className={styles.miniWidget}>
-                    <div className={styles.widgetLabel}>Est. Revenue</div>
-                    <div className={styles.widgetValue}>₦2.4M</div>
-                    <div className={styles.widgetLabel} style={{ fontSize: '0.6rem' }}>Today (Proj.)</div>
-                </div>
+                <Link href="/dashboard/analytics" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <motion.div whileTap={{ scale: 0.95 }} className={styles.miniWidget}>
+                        <div className={styles.widgetLabel}>Est. Revenue</div>
+                        <div className={styles.widgetValue}>₦2.4M</div>
+                        <div className={styles.widgetLabel} style={{ fontSize: '0.6rem' }}>Today (Proj.)</div>
+                    </motion.div>
+                </Link>
                 <div className={styles.miniWidget}>
                     <div className={styles.widgetLabel}>Peak Hour</div>
                     <div className={styles.widgetValue}>{peakHour}</div>

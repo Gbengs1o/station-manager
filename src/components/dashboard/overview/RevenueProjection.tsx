@@ -40,7 +40,7 @@ export default function RevenueProjection({ todayVisits, price }: RevenueProject
             <div className={styles.statChange} style={{ marginTop: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#22c55e', fontSize: '0.8rem' }}>
                     <TrendingUp size={12} />
-                    <span>Based on {todayVisits} impressions today</span>
+                    <span>Based on {todayVisits} visitors today</span>
                 </div>
                 <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', marginTop: '8px', overflow: 'hidden' }}>
                     <motion.div

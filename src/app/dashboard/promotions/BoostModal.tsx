@@ -49,11 +49,23 @@ export default function BoostModal({ isOpen, onClose, tiers, walletBalance, stat
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
                     <div>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Boost Your Station</h2>
-                        <p style={{ color: '#64748b' }}>Select a promotion tier to increase visibility.</p>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-primary)' }}>Boost Your Station</h2>
+                        <p style={{ color: 'var(--text-secondary)' }}>Select a promotion tier to increase visibility.</p>
                     </div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                        <X />
+                    <button onClick={onClose} style={{
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '10px',
+                        width: '36px',
+                        height: '36px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: 'var(--text-secondary)',
+                        transition: 'all 0.2s ease'
+                    }}>
+                        <X size={18} />
                     </button>
                 </div>
 
@@ -64,7 +76,7 @@ export default function BoostModal({ isOpen, onClose, tiers, walletBalance, stat
                             className={`${styles.tierCard} ${selectedTier?.id === tier.id ? styles.tierCardActive : ''}`}
                             onClick={() => setSelectedTier(tier)}
                         >
-                            <div style={{ color: selectedTier?.id === tier.id ? '#3b82f6' : '#64748b' }}>
+                            <div style={{ color: selectedTier?.id === tier.id ? 'var(--primary)' : 'var(--text-secondary)' }}>
                                 {getIcon(tier.name)}
                             </div>
                             <h4>{tier.name}</h4>
@@ -75,9 +87,9 @@ export default function BoostModal({ isOpen, onClose, tiers, walletBalance, stat
                 </div>
 
                 {selectedTier && (
-                    <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', marginBottom: '24px' }}>
-                        <h5 style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: '#1e293b' }}>Features included:</h5>
-                        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#64748b' }}>
+                    <div className={styles.featuresBox}>
+                        <h5>Features included:</h5>
+                        <ul>
                             {selectedTier.features?.map((f: string, i: number) => (
                                 <li key={i}>{f.replace('_', ' ')}</li>
                             ))}
@@ -87,8 +99,8 @@ export default function BoostModal({ isOpen, onClose, tiers, walletBalance, stat
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Wallet Balance</span>
-                        <div style={{ fontWeight: '700' }}>₦{walletBalance.toLocaleString()}</div>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Wallet Balance</span>
+                        <div style={{ fontWeight: '700', color: 'var(--text-primary)' }}>₦{walletBalance.toLocaleString()}</div>
                     </div>
                     <button
                         className="btn-primary"

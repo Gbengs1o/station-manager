@@ -1,16 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Loader2 } from 'lucide-react';
+import { Wallet, Plus, RefreshCw, Loader2 } from 'lucide-react';
 import { initializeTransaction } from '@/app/dashboard/promotions/actions';
 import styles from './promotions.module.css';
 
 interface WalletDashboardProps {
     wallet: any;
     transactions: any[];
+    onRefresh?: () => void;
+    isRefreshing?: boolean;
 }
 
-export default function WalletDashboard({ wallet, transactions }: WalletDashboardProps) {
+export default function WalletDashboard({ wallet, transactions, onRefresh, isRefreshing }: WalletDashboardProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [topUpAmount, setTopUpAmount] = useState('2000');
 
@@ -40,7 +42,19 @@ export default function WalletDashboard({ wallet, transactions }: WalletDashboar
             <div className={styles.balanceCard}>
                 <div className={styles.balanceHeader}>
                     <span>Available Balance</span>
-                    <Wallet size={20} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {onRefresh && (
+                            <button
+                                className={isRefreshing ? styles.refreshBtnSpinning : styles.refreshBtn}
+                                onClick={onRefresh}
+                                title="Refresh wallet"
+                                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}
+                            >
+                                <RefreshCw size={14} />
+                            </button>
+                        )}
+                        <Wallet size={20} />
+                    </div>
                 </div>
                 <div className={styles.balanceValue}>
                     ₦{wallet?.balance?.toLocaleString() || '0'}
@@ -51,13 +65,6 @@ export default function WalletDashboard({ wallet, transactions }: WalletDashboar
                             value={topUpAmount}
                             onChange={(e) => setTopUpAmount(e.target.value)}
                             className={styles.amountSelect}
-                            style={{
-                                padding: '8px',
-                                borderRadius: '8px',
-                                border: '1px solid #e2e8f0',
-                                flex: 1,
-                                fontSize: '0.9rem'
-                            }}
                         >
                             <option value="1000">₦1,000</option>
                             <option value="2000">₦2,000</option>
@@ -79,7 +86,18 @@ export default function WalletDashboard({ wallet, transactions }: WalletDashboar
             <div className={styles.historyCard}>
                 <div className={styles.historyHeader}>
                     <h3>Recent Transactions</h3>
-                    <button className="btn-secondary" style={{ padding: '4px 12px' }}>View All</button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {onRefresh && (
+                            <button
+                                className={isRefreshing ? styles.refreshBtnSpinning : styles.refreshBtn}
+                                onClick={onRefresh}
+                                title="Refresh transactions"
+                            >
+                                <RefreshCw size={14} />
+                            </button>
+                        )}
+                        <button className="btn-secondary" style={{ padding: '4px 12px', fontSize: '0.8rem', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '8px' }}>View All</button>
+                    </div>
                 </div>
                 <div className={styles.transactionList}>
                     {transactions.length > 0 ? (
@@ -95,7 +113,7 @@ export default function WalletDashboard({ wallet, transactions }: WalletDashboar
                             </div>
                         ))
                     ) : (
-                        <p style={{ color: '#64748b', textAlign: 'center', padding: '20px' }}>No transactions yet.</p>
+                        <p className={styles.emptyState}>No transactions yet.</p>
                     )}
                 </div>
             </div>

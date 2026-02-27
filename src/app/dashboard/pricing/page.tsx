@@ -26,7 +26,17 @@ export default async function PricingPage() {
         .eq('id', profile?.station_id)
         .single();
 
-    // 2. Fetch Nearest Competitors (Geographically Verified)
+    // 2. Fetch Official State Price (Fallback)
+    const { data: officialPriceData } = await supabase
+        .from('official_prices')
+        .select('pms_price')
+        .eq('state', station?.state || 'Oyo')
+        .eq('brand', 'all')
+        .single();
+
+    const statePrice = parseFloat(officialPriceData?.pms_price as any) || 950;
+
+    // 3. Fetch Nearest Competitors (Geographically Verified)
     const userLat = station?.latitude || 7.404818;
     const userLon = station?.longitude || 3.810341;
 
@@ -62,7 +72,7 @@ export default async function PricingPage() {
         .map(c => ({
             ...c,
             // Using verified Market Projections for stations with pending updates
-            price_pms: parseFloat(c.price_pms as any) || 645
+            price_pms: parseFloat(c.price_pms as any) || statePrice
         }));
 
     // 3. Fetch Price History Logs (All types for table)
@@ -109,7 +119,7 @@ export default async function PricingPage() {
 
                     <PriceHistoryChart
                         logs={pmsHistory.length ? pmsHistory.map(l => ({ date: l.created_at, price: l.new_price })) : mockChartData}
-                        stateAverage={645}
+                        stateAverage={statePrice}
                     />
 
                     <PriceHistoryTable logs={allHistoryLogs || []} />

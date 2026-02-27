@@ -37,6 +37,9 @@ export async function trackPromotionClick(promotionId: string) {
     // Increment clicks in station_promotions
     const { error } = await supabase.rpc('increment_promotion_clicks', { promo_id: promotionId });
 
+    // Log the click event for hourly analytics
+    await supabase.from('promotion_click_events').insert({ promotion_id: promotionId });
+
     if (error) {
         // Fallback
         const { data: promo } = await supabase

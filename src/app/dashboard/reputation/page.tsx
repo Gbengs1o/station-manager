@@ -147,7 +147,7 @@ export default async function ReputationPage() {
                     <TrustScoreCards
                         meterRating={meterRating}
                         totalReviews={totalReviews}
-                        totalReports={reportsCount}
+                        totalReports={reportsCount || 0}
                         overallRating={trustScorePercent.toString() + '%'} // Show as %
                         isVerified={station?.is_verified || false}
                     />

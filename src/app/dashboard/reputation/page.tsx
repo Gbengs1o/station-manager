@@ -56,14 +56,14 @@ export default async function ReputationPage() {
 
     // 4. Unify into a single activity feed
     const unifiedFeed = [
-        ...(reviews || []).map(r => ({ ...r, type: 'review' })),
-        ...(pReports || []).map(p => ({
+        ...(reviews || []).map((r: any) => ({ ...r, type: 'review' })),
+        ...(pReports || []).map((p: any) => ({
             ...p,
             type: 'report',
-            rating: p.rating || 5, // Reports are implicitly 5-star if they are positive updates
-            comment: p.notes // Use the raw notes as the comment
+            rating: p.rating || 5,
+            comment: p.notes
         }))
-    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    ].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     // Real logic for aggregate scores
     const totalReviews = reviews?.length || 0;

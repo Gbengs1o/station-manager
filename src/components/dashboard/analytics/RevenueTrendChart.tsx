@@ -17,7 +17,7 @@ export default function RevenueTrendChart({ data }: { data: ChartData[] }) {
     const hasData = data.some(d => d.visits > 0 || d.interactions > 0);
 
     const chartPoints = useMemo(() => {
-        if (!hasData) return { revenuePath: '', visitsPath: '', revenueArea: '', yLabels: [] as number[] };
+        if (!hasData) return { revenuePath: '', visitsPath: '', revenueArea: '', yLabels: [] as number[], getY: (v: number) => 0 };
 
         const maxVal = Math.max(...data.map(d => Math.max(d.interactions, d.visits, 5)));
         const width = 800;

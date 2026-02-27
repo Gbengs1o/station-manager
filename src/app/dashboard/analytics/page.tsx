@@ -59,31 +59,30 @@ export default async function AnalyticsPage() {
         dailyData[d.toISOString().split('T')[0]] = { visits: 0, interactions: 0, views: 0 };
     }
 
-    (analytics || []).forEach(a => {
+    (analytics || []).forEach((a: any) => {
         if (dailyData[a.date]) {
             dailyData[a.date].visits = a.daily_visits || 0;
-            dailyData[a.date].interactions = Number(a.revenue) || 0; // Use interaction key
+            dailyData[a.date].interactions = Number(a.revenue) || 0;
             dailyData[a.date].views = a.profile_views || 0;
         }
     });
 
-    [...(reports || []), ...(reviews || [])].forEach(item => {
+    ([...(reports || []), ...(reviews || [])] as any[]).forEach((item: any) => {
         const date = item.created_at.split('T')[0];
         if (dailyData[date]) {
             dailyData[date].visits += 1;
             dailyData[date].views += 5;
 
-            // Synthesis: Interaction points
             if ('price' in item) {
-                dailyData[date].interactions += 1; // Real driver action
+                dailyData[date].interactions += 1;
             }
         }
     });
 
-    (priceLogs || []).forEach(log => {
+    (priceLogs || []).forEach((log: any) => {
         const date = log.created_at.split('T')[0];
         if (dailyData[date]) {
-            dailyData[date].interactions += 1; // Count as 1 verified event
+            dailyData[date].interactions += 1;
             dailyData[date].visits += 1;
         }
     });
@@ -97,7 +96,7 @@ export default async function AnalyticsPage() {
     })).sort((a, b) => a.date.localeCompare(b.date));
 
     const totalVisits = chartData.reduce((acc, curr) => acc + curr.visits, 0);
-    const promoViews = promos?.reduce((acc, p) => acc + (p.views || 0), 0) || 0;
+    const promoViews = (promos || []).reduce((acc: number, p: any) => acc + (p.views || 0), 0);
     const totalViews = Object.values(dailyData).reduce((acc, curr) => acc + curr.views, 0) + promoViews;
 
     // Community Reach = Views + Reports + Favourites
@@ -106,7 +105,7 @@ export default async function AnalyticsPage() {
 
     const busiestDayEntry = chartData.reduce((prev, current) =>
         (current.visits > prev.visits) ? current : prev
-        , { visits: 0, date: sortedDates[0] });
+        , { visits: 0, date: sortedDates[0] || new Date().toISOString() });
 
     const busiestDayLabel = busiestDayEntry.visits > 0
         ? new Date(busiestDayEntry.date).toLocaleDateString('en-US', { weekday: 'long' })
@@ -131,8 +130,8 @@ export default async function AnalyticsPage() {
         ...(favourites || [])
     ].filter(item => item.created_at < sevenDaysAgoStr);
 
-    const currentUniqueDrivers = new Set(recentInteractions.map(i => i.user_id));
-    const historicalUniqueDrivers = new Set(historicalInteractions.map(i => i.user_id));
+    const currentUniqueDrivers = new Set((recentInteractions as any[]).map((i: any) => i.user_id));
+    const historicalUniqueDrivers = new Set((historicalInteractions as any[]).map((i: any) => i.user_id));
 
     // Newcomers = Drivers seen this week who were NOT seen in the previous week
     const newcomers = Array.from(currentUniqueDrivers).filter(id => !historicalUniqueDrivers.has(id)).length;
@@ -167,10 +166,10 @@ export default async function AnalyticsPage() {
 
     // 5. Merge for Activity Feed
     const allActivities: any[] = [
-        ...(reports || []).map(r => ({ type: 'report', created_at: r.created_at, description: 'New Driver Price Report' })),
-        ...(reviews || []).map(r => ({ type: 'review', created_at: r.created_at, description: 'New Station Review' })),
-        ...(priceLogs || []).map(r => ({ type: 'price_log', created_at: r.created_at, description: 'Base Price Update' }))
-    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        ...(reports || []).map((r: any) => ({ type: 'report', created_at: r.created_at, description: 'New Driver Price Report' })),
+        ...(reviews || []).map((r: any) => ({ type: 'review', created_at: r.created_at, description: 'New Station Review' })),
+        ...(priceLogs || []).map((p: any) => ({ type: 'price_log', created_at: p.created_at, description: 'Base Price Update' }))
+    ].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return (
         <div className={styles.dashboard}>
